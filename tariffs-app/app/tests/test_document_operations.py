@@ -9,21 +9,16 @@ import shutil
 import tempfile
 
 def normalize_sql(sql):
-    """Normalize SQL string by removing extra whitespace and newlines for comparison"""
     if sql is None:
         return None
-    # Replace multiple whitespace characters with a single space
     normalized = re.sub(r'\s+', ' ', sql)
-    # Trim spaces
     normalized = normalized.strip()
     return normalized
 
 class TestDocumentStorageOperations(unittest.TestCase):
     def setUp(self):
-        # Create a temporary directory for test uploads
         self.test_upload_dir = tempfile.mkdtemp()
         
-        # Mock the database connection and cursor
         self.mock_execute_query_patcher = patch('app.database.config.execute_query')
         self.mock_execute_query = self.mock_execute_query_patcher.start()
         
@@ -33,81 +28,61 @@ class TestDocumentStorageOperations(unittest.TestCase):
         self.mock_close_connection_patcher = patch('app.database.config.close_connection')
         self.mock_close_connection = self.mock_close_connection_patcher.start()
         
-        # Mock UUID generation for predictable filenames
         self.mock_uuid_patcher = patch('uuid.uuid4')
         self.mock_uuid = self.mock_uuid_patcher.start()
         self.mock_uuid.return_value = uuid.UUID('12345678-1234-5678-1234-567812345678')
         
-        # Setup common mock objects
         self.mock_conn = MagicMock()
         self.mock_cursor = MagicMock()
         self.mock_conn.cursor.return_value = self.mock_cursor
         self.mock_get_db_connection.return_value = self.mock_conn
 
     def tearDown(self):
-        # Remove the temporary directory after tests
         shutil.rmtree(self.test_upload_dir)
         
-        # Stop all patches
         self.mock_execute_query_patcher.stop()
         self.mock_get_db_connection_patcher.stop()
         self.mock_close_connection_patcher.stop()
         self.mock_uuid_patcher.stop()
 
     async def test_document_storage_in_filesystem(self):
-        """Test that documents are correctly stored in the filesystem"""
-        # Mock file content
         mock_content = b"Test document content"
         mock_file = MagicMock()
         mock_file.filename = "test_document.pdf"
         mock_file.content_type = "application/pdf"
         mock_file.read = AsyncMock(return_value=mock_content)
         
-        # Create expected file path based on mocked UUID
         expected_filename = f"12345678-1234-5678-1234-567812345678.pdf"
         expected_path = os.path.join(self.test_upload_dir, expected_filename)
         
-        # Patch open() to verify file writing without actually writing to disk
         with patch('builtins.open', MagicMock()) as mock_open:
             mock_file_handle = mock_open.return_value.__enter__.return_value
             
-            # Generate unique filename (using our mocked UUID)
             unique_filename = f"{uuid.uuid4()}.pdf"
             
-            # Expected file path that would be used in production
             file_location = os.path.join("uploads", unique_filename)
             
-            # Write file to disk (mocked)
             with open(expected_path, 'wb') as buffer:
                 buffer.write(await mock_file.read())
             
-            # Verify that the file would have been opened for writing
             mock_open.assert_called_once_with(expected_path, 'wb')
             
-            # Verify that the correct content would have been written
             mock_file_handle.write.assert_called_once_with(mock_content)
         
-        # Verify that the correct file path is returned
         self.assertEqual(file_location, f"uploads/{expected_filename}")
 
     def test_document_record_in_database(self):
-        """Test that document references are correctly stored in the database"""
-        # Mock application ID and document metadata
         application_id = 123
         document_type = "Student ID"
         file_location = "uploads/12345678-1234-5678-1234-567812345678.pdf"
         
-        # Mock successful insert
-        self.mock_cursor.lastrowid = 456  # Document record ID
+        self.mock_cursor.lastrowid = 456
         
-        # Import database functionality
         from app.database.config import execute_query, get_db_connection, close_connection
         
-        # Database operation to store document reference
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Insert document record
         query = """
             INSERT INTO document_record (application_id, document_type, document_value) 
             VALUES (%s, %s, %s)
@@ -116,25 +91,19 @@ class TestDocumentStorageOperations(unittest.TestCase):
         cursor.execute(query, params)
         document_id = cursor.lastrowid
         
-        # Commit and close
         conn.commit()
         cursor.close()
         close_connection(conn)
         
-        # Verify correct database operations
         self.mock_cursor.execute.assert_called_once_with(query, params)
         self.mock_conn.commit.assert_called_once()
         self.mock_close_connection.assert_called_once_with(self.mock_conn)
         
-        # Verify document ID is returned
         self.assertEqual(document_id, 456)
 
     def test_retrieve_document_from_database(self):
-        """Test retrieving document references from the database"""
-        # Mock application ID 
         application_id = 123
         
-        # Mock query result
         expected_documents = [
             {
                 "record_id": 456, 
@@ -151,61 +120,47 @@ class TestDocumentStorageOperations(unittest.TestCase):
         ]
         self.mock_execute_query.return_value = expected_documents
         
-        # Import database functionality
         from app.database.config import execute_query
         
-        # Query to retrieve documents
         query = """
             SELECT * FROM document_record
             WHERE application_id = %s
         """
         documents = execute_query(query, (application_id,))
         
-        # Verify query was executed correctly
         self.mock_execute_query.assert_called_once_with(query, (application_id,))
         
-        # Verify returned documents match expected
         self.assertEqual(documents, expected_documents)
         self.assertEqual(len(documents), 2)
         self.assertEqual(documents[0]["document_type"], "Student ID")
         self.assertEqual(documents[1]["document_type"], "Proof of Address")
 
     async def test_complete_document_flow_for_exemption_application(self):
-        """Test the complete flow of document handling in exemption application"""
-        # Setup test parameters
         application_id = 123
         passenger_id = 456
         document_type = "Student ID"
         
-        # Mock file content
         mock_content = b"Test document content"
         mock_file = MagicMock()
         mock_file.filename = "student_id.pdf"
         mock_file.content_type = "application/pdf"
         mock_file.read = AsyncMock(return_value=mock_content)
         
-        # Setup expected UUID-based filename
         expected_filename = f"12345678-1234-5678-1234-567812345678.pdf"
         expected_path = os.path.join(self.test_upload_dir, expected_filename)
         expected_file_location = f"uploads/{expected_filename}"
         
-        # Mock database operations
-        self.mock_cursor.lastrowid = 789  # Document record ID
+        self.mock_cursor.lastrowid = 789
         
-        # Import necessary functionality
         from app.database.config import execute_query, get_db_connection, close_connection
         
-        # Mock file writing without actually writing to disk
         with patch('builtins.open', MagicMock()) as mock_open:
-            # 1. Generate unique filename
             unique_filename = f"{uuid.uuid4()}.pdf"
             file_location = os.path.join("uploads", unique_filename)
             
-            # 2. Save file to disk (mocked)
             with open(expected_path, 'wb') as buffer:
                 buffer.write(await mock_file.read())
                 
-            # 3. Store document reference in database
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
@@ -216,7 +171,6 @@ class TestDocumentStorageOperations(unittest.TestCase):
             params = (application_id, document_type, file_location)
             cursor.execute(query, params)
             
-            # 4. Log the document upload in activity_log
             log_query = """
                 INSERT INTO activity_log (activity_type, description, entity_id, entity_type, created_at)
                 VALUES (%s, %s, %s, %s, NOW())
@@ -225,30 +179,22 @@ class TestDocumentStorageOperations(unittest.TestCase):
             log_params = ("document_upload", log_description, application_id, "exemption_application")
             cursor.execute(log_query, log_params)
             
-            # Commit and close
             conn.commit()
             cursor.close()
             close_connection(conn)
             
-            # Verify correct operations
-            # Check file was opened for writing
             mock_open.assert_called_once_with(expected_path, 'wb')
             
-            # Check database operations 
             self.mock_cursor.execute.assert_any_call(query, params)
             self.mock_cursor.execute.assert_any_call(log_query, log_params)
-            self.assertEqual(self.mock_cursor.execute.call_count, 2)  # Two SQL operations
+            self.assertEqual(self.mock_cursor.execute.call_count, 2)
             
-            # Check transaction was committed
             self.mock_conn.commit.assert_called_once()
             self.mock_close_connection.assert_called_once_with(self.mock_conn)
 
     def test_document_validation_for_exemption_application(self):
-        """Test document validation as part of exemption application processing"""
-        # Mock application ID
         application_id = 123
         
-        # Mock document records for this application
         self.mock_execute_query.side_effect = [
             [
                 {
@@ -264,26 +210,22 @@ class TestDocumentStorageOperations(unittest.TestCase):
                     "document_value": "uploads/87654321-8765-4321-8765-432187654321.pdf"
                 }
             ],
-            {"affected_rows": 1}  # Result of status update
+            {"affected_rows": 1}
         ]
         
-        # Import database functionality
         from app.database.config import execute_query, get_db_connection, close_connection
         
-        # 1. Fetch documents for this application
         doc_query = """
             SELECT * FROM document_record
             WHERE application_id = %s
         """
         documents = execute_query(doc_query, (application_id,))
         
-        # 2. Verify required documents exist
         required_docs = ["Student ID", "Proof of Address"]
         submitted_doc_types = [doc["document_type"] for doc in documents]
         
         all_docs_present = all(req_doc in submitted_doc_types for req_doc in required_docs)
         
-        # 3. Update application status based on validation
         if all_docs_present:
             status_query = """
                 UPDATE exemption_application
@@ -293,7 +235,6 @@ class TestDocumentStorageOperations(unittest.TestCase):
             new_status = "Validated"
             result = execute_query(status_query, (new_status, application_id), fetch=False)
         
-        # Verify the correct queries were executed
         expected_doc_query = normalize_sql("""
             SELECT * FROM document_record
             WHERE application_id = %s
@@ -305,10 +246,8 @@ class TestDocumentStorageOperations(unittest.TestCase):
             WHERE application_id = %s
         """)
         
-        # Check first query (document fetch)
         self.mock_execute_query.assert_any_call(doc_query, (application_id,))
         
-        # Check second query (status update)
         call_args_list = self.mock_execute_query.call_args_list
         second_call = call_args_list[1]
         query, params, kwargs = second_call[0][0], second_call[0][1], second_call[1]
@@ -316,13 +255,10 @@ class TestDocumentStorageOperations(unittest.TestCase):
         self.assertEqual(params, ("Validated", application_id))
         self.assertEqual(kwargs, {"fetch": False})
         
-        # Verify validation outcome
         self.assertTrue(all_docs_present)
         self.assertEqual(result, {"affected_rows": 1})
 
     def test_generate_document_report(self):
-        """Test generating a report of documents by type"""
-        # Mock query result
         expected_report_data = [
             {"document_type": "Student ID", "count": 25},
             {"document_type": "Proof of Address", "count": 23},
@@ -331,10 +267,8 @@ class TestDocumentStorageOperations(unittest.TestCase):
         ]
         self.mock_execute_query.return_value = expected_report_data
         
-        # Import database functionality
         from app.database.config import execute_query
         
-        # Query to generate the report
         query = """
             SELECT 
                 document_type,
@@ -345,25 +279,19 @@ class TestDocumentStorageOperations(unittest.TestCase):
         """
         report_data = execute_query(query)
         
-        # Verify query was executed correctly
         self.mock_execute_query.assert_called_once_with(query)
         
-        # Verify report data is correct
         self.assertEqual(report_data, expected_report_data)
         self.assertEqual(len(report_data), 4)
         self.assertEqual(report_data[0]["document_type"], "Student ID")
         self.assertEqual(report_data[0]["count"], 25)
         
-        # Verify that Student ID is the most common document type
         most_common = max(report_data, key=lambda x: x["count"])
         self.assertEqual(most_common["document_type"], "Student ID")
 
     def test_retrieve_document_with_application(self):
-        """Test retrieving application details with related documents"""
-        # Mock application ID
         application_id = 123
         
-        # Mock query results
         self.mock_execute_query.side_effect = [
             [
                 {
@@ -391,10 +319,8 @@ class TestDocumentStorageOperations(unittest.TestCase):
             ]
         ]
         
-        # Import database functionality
         from app.database.config import execute_query
         
-        # 1. Get application details
         app_query = """
             SELECT ea.*, p.passenger_full_name, p.email
             FROM exemption_application ea
@@ -403,14 +329,12 @@ class TestDocumentStorageOperations(unittest.TestCase):
         """
         application = execute_query(app_query, (application_id,))
         
-        # 2. Get documents for this application
         doc_query = """
             SELECT * FROM document_record
             WHERE application_id = %s
         """
         documents = execute_query(doc_query, (application_id,))
         
-        # Verify queries were executed correctly
         expected_app_query = normalize_sql("""
             SELECT ea.*, p.passenger_full_name, p.email
             FROM exemption_application ea
@@ -423,17 +347,14 @@ class TestDocumentStorageOperations(unittest.TestCase):
             WHERE application_id = %s
         """)
         
-        # Check application query
         self.mock_execute_query.assert_any_call(app_query, (application_id,))
         
-        # Check document query
         call_args_list = self.mock_execute_query.call_args_list
         second_call = call_args_list[1]
         query, params = second_call[0]
         self.assertEqual(normalize_sql(query), expected_doc_query)
         self.assertEqual(params, (application_id,))
         
-        # Verify returned data
         self.assertEqual(len(application), 1)
         self.assertEqual(application[0]["passenger_full_name"], "John Smith")
         self.assertEqual(application[0]["status"], "Submitted")

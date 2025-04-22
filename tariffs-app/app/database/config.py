@@ -5,20 +5,16 @@ from dotenv import load_dotenv
 import time
 import datetime
 
-# Load environment variables from .env file if present
 load_dotenv()
 
-# Get database config from environment variables or use defaults
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_NAME = os.getenv("DB_NAME", "tariffs_exemptions")
 
-# Set to True to enable query logging
 QUERY_LOGGING = True
 
 def log_query(query, params=None, time_taken=None, rows_affected=None):
-    """Log query details to terminal"""
     if not QUERY_LOGGING:
         return
     
@@ -42,10 +38,6 @@ def log_query(query, params=None, time_taken=None, rows_affected=None):
     print("-" * 80)
 
 def get_db_connection():
-    """
-    Create a database connection to MySQL
-    Returns connection object or None on error
-    """
     try:
         connection = mysql.connector.connect(
             host=DB_HOST,
@@ -65,12 +57,10 @@ def get_db_connection():
         return None
 
 def close_connection(connection):
-    """Close the database connection"""
     if connection and connection.is_connected():
         connection.close()
 
 def ensure_activity_log_table_exists():
-    """Create activity_log table if it doesn't exist"""
     connection = get_db_connection()
     if not connection:
         print("Error: Could not connect to database to create activity_log table")
@@ -80,7 +70,6 @@ def ensure_activity_log_table_exists():
     try:
         cursor = connection.cursor()
         
-        # Create activity_log table if it doesn't exist
         create_table_query = """
         CREATE TABLE IF NOT EXISTS activity_log (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -107,17 +96,6 @@ def ensure_activity_log_table_exists():
         close_connection(connection)
 
 def execute_query(query, params=None, fetch=True):
-    """
-    Execute a query on the database
-    
-    Args:
-        query (str): SQL query to execute
-        params (tuple, optional): Parameters for the SQL query
-        fetch (bool): Whether to fetch results or not (for INSERT/UPDATE/DELETE)
-        
-    Returns:
-        list of dicts if fetch=True, dict with affected_rows if fetch=False
-    """
     connection = get_db_connection()
     cursor = None
     result = None
@@ -137,11 +115,9 @@ def execute_query(query, params=None, fetch=True):
                 log_query(query, params, time.time() - start_time, result)
             else:
                 connection.commit()
-                # Explicitly get the last insert ID if this was an insert
                 last_id = None
                 if query.lower().strip().startswith("insert"):
                     last_id = cursor.lastrowid
-                    # If lastrowid is not available, try to get it with a separate query
                     if last_id is None or last_id == 0:
                         try:
                             cursor.execute("SELECT LAST_INSERT_ID()")
@@ -168,18 +144,6 @@ def execute_query(query, params=None, fetch=True):
     return result
 
 def insert_record(table, data, returning_id=True):
-    """
-    Helper function to insert a record into a table
-    
-    Args:
-        table (str): Table name
-        data (dict): Dictionary with column:value pairs
-        returning_id (bool): Whether to return the inserted ID
-        
-    Returns:
-        int: ID of inserted record if successful and returning_id=True
-        bool: True if successful and returning_id=False
-    """
     columns = ', '.join(data.keys())
     placeholders = ', '.join(['%s'] * len(data))
     values = tuple(data.values())

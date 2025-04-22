@@ -9,18 +9,14 @@ import logging
 logger = logging.getLogger('tariffs_test')
 
 def normalize_sql(sql):
-    """Normalize SQL string by removing extra whitespace and newlines for comparison"""
     if sql is None:
         return None
-    # Replace multiple whitespace characters with a single space
     normalized = re.sub(r'\s+', ' ', sql)
-    # Trim spaces
     normalized = normalized.strip()
     return normalized
 
 class TestPassengerRegistrationOperations(unittest.TestCase):
     def setUp(self):
-        # Mock the database connection and cursor
         self.mock_execute_query_patcher = patch('app.database.config.execute_query')
         self.mock_execute_query = self.mock_execute_query_patcher.start()
         
@@ -30,15 +26,13 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
         self.mock_close_connection_patcher = patch('app.database.config.close_connection')
         self.mock_close_connection = self.mock_close_connection_patcher.stop()
         
-        # Setup common mock objects
         self.mock_conn = MagicMock()
         self.mock_cursor = MagicMock()
         self.mock_conn.cursor.return_value = self.mock_cursor
         self.mock_get_db_connection.return_value = self.mock_conn
 
-        # Store test data for reporting
         self.test_data = {
-            'operations_performed': []  # Track operations for better reporting
+            'operations_performed': []
         }
 
     def tearDown(self):
@@ -47,13 +41,10 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
         self.mock_close_connection_patcher.stop()
 
     def log_table_state_before(self):
-        """Log the table state before the test operation"""
         logger.info("PASSENGER TABLE STATE BEFORE OPERATION:")
         
-        # For test_create_passenger or test_email_already_exists
         test_name = self._testMethodName
         if test_name == 'test_create_passenger':
-            # Mock what would be returned from the database
             initial_passengers = [
                 {"passenger_id": 1, "passenger_full_name": "Existing User", "email": "existing@example.com"}
             ]
@@ -63,7 +54,6 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
             self.test_data['initial_passengers'] = initial_passengers
             
         elif test_name == 'test_email_already_exists':
-            # Mock what would be returned from the database
             initial_passengers = [
                 {"passenger_id": 1, "passenger_full_name": "Existing User", "email": "existing@example.com"}
             ]
@@ -74,12 +64,10 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
             self.test_data['initial_passengers'] = initial_passengers
 
     def log_table_state_after(self):
-        """Log the table state after the test operation"""
         logger.info("PASSENGER TABLE STATE AFTER OPERATION:")
         
         test_name = self._testMethodName
         if test_name == 'test_create_passenger':
-            # Use the mock's call arguments to determine what was inserted
             for call_args in self.mock_execute_query.call_args_list:
                 args, kwargs = call_args
                 if args and len(args) > 0 and "INSERT INTO passenger" in args[0]:
@@ -89,9 +77,8 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
                     logger.info(f"  - Query: {query}")
                     logger.info(f"  - Parameters: {params}")
                     
-                    # Add the new record to our simulated database
                     new_passenger = {
-                        "passenger_id": 123,  # From the mock's return value
+                        "passenger_id": 123,
                         "passenger_full_name": params[0],
                         "email": params[1]
                     }
@@ -101,7 +88,6 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
                     for passenger in updated_passengers:
                         logger.info(f"  - ID: {passenger['passenger_id']}, Name: {passenger['passenger_full_name']}, Email: {passenger['email']}")
                     
-                    # Track the operation
                     self.test_data['operations_performed'].append(
                         f"Created passenger with name '{params[0]}' and email '{params[1]}'"
                     )
@@ -115,32 +101,25 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
             for passenger in self.test_data.get('initial_passengers', []):
                 logger.info(f"  - ID: {passenger['passenger_id']}, Name: {passenger['passenger_full_name']}, Email: {passenger['email']}")
             
-            # Track the operation
             self.test_data['operations_performed'].append(
                 "Passenger creation prevented due to duplicate email 'existing@example.com'"
             )
 
     def test_create_passenger(self):
-        """Test the SQL operations for creating a passenger"""
         self.log_table_state_before()
 
-        # Mock the successful insert
         self.mock_execute_query.side_effect = [
-            [],  # No existing email
-            {"affected_rows": 1, "last_insert_id": 123}  # Successful insert
+            [],
+            {"affected_rows": 1, "last_insert_id": 123}
         ]
         
-        # Setup the test parameters
         passenger_full_name = "Test User"
         email = "test@example.com"
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query
         
-        # Check if email already exists
         existing_email = execute_query("SELECT passenger_id FROM passenger WHERE email = %s", (email,))
         
-        # If validation passes, insert passenger into database
         query = """
             INSERT INTO passenger (passenger_full_name, email) 
             VALUES (%s, %s)
@@ -148,46 +127,34 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
         params = (passenger_full_name, email)
         result = execute_query(query, params, fetch=False)
         
-        # Assert the queries were called correctly
         self.mock_execute_query.assert_any_call("SELECT passenger_id FROM passenger WHERE email = %s", (email,))
         
-        # Use normalize_sql for SQL string comparison
         normalized_query = normalize_sql(query)
         for call_args in self.mock_execute_query.call_args_list:
             args, kwargs = call_args
             if args and len(args) > 0:
-                # Check if the normalized SQL strings match
                 if normalize_sql(args[0]) == normalized_query and args[1] == params:
-                    # Found the right call
                     break
         else:
             self.fail(f"Expected execute_query call with normalized query {normalized_query} not found")
         
-        # Assert the expected result
         self.assertEqual(result, {"affected_rows": 1, "last_insert_id": 123})
 
         self.log_table_state_after()
 
     def test_email_already_exists(self):
-        """Test the SQL operations when email already exists"""
         self.log_table_state_before()
 
-        # Mock finding an existing email
         self.mock_execute_query.return_value = [{"passenger_id": 1}]
         
-        # Setup the test parameters
         email = "existing@example.com"
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query
         
-        # Check if email already exists
         existing_email = execute_query("SELECT passenger_id FROM passenger WHERE email = %s", (email,))
         
-        # Assert the query was called correctly
         self.mock_execute_query.assert_called_once_with("SELECT passenger_id FROM passenger WHERE email = %s", (email,))
         
-        # Assert that an existing email was found
         self.assertTrue(existing_email)
         self.assertEqual(existing_email[0]["passenger_id"], 1)
 
@@ -195,7 +162,6 @@ class TestPassengerRegistrationOperations(unittest.TestCase):
 
 class TestExemptionApplicationOperations(unittest.TestCase):
     def setUp(self):
-        # Mock the database connection and cursor
         self.mock_execute_query_patcher = patch('app.database.config.execute_query')
         self.mock_execute_query = self.mock_execute_query_patcher.start()
         
@@ -205,15 +171,13 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         self.mock_close_connection_patcher = patch('app.database.config.close_connection')
         self.mock_close_connection = self.mock_close_connection_patcher.start()
         
-        # Setup common mock objects
         self.mock_conn = MagicMock()
         self.mock_cursor = MagicMock()
         self.mock_conn.cursor.return_value = self.mock_cursor
         self.mock_get_db_connection.return_value = self.mock_conn
         
-        # Store test data for reporting
         self.test_data = {
-            'operations_performed': []  # Track operations for better reporting
+            'operations_performed': []
         }
 
     def tearDown(self):
@@ -222,12 +186,10 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         self.mock_close_connection_patcher.stop()
     
     def log_table_state_before(self):
-        """Log the table state before the test operation"""
         test_name = self._testMethodName
         
         if test_name == 'test_submit_exemption_application':
             logger.info("EXEMPTION APPLICATION TABLES STATE BEFORE OPERATION:")
-            # Mock existing data in the tables
             existing_applications = []
             existing_documents = []
             existing_activity_logs = []
@@ -236,7 +198,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             logger.info(f"document_record table: {existing_documents} (EMPTY)")
             logger.info(f"activity_log table: {existing_activity_logs} (EMPTY)")
             
-            # Store for later comparison
             self.test_data.update({
                 'existing_applications': existing_applications,
                 'existing_documents': existing_documents,
@@ -245,7 +206,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             
         elif test_name == 'test_pending_application_check':
             logger.info("EXEMPTION APPLICATION TABLE STATE BEFORE OPERATION:")
-            # Mock existing data with a pending application
             existing_applications = [
                 {"application_id": 1, "passenger_id": 123, "status": "Submitted", "submitted_date": date.today()}
             ]
@@ -257,7 +217,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             
         elif test_name == 'test_view_exemptions':
             logger.info("EXEMPTION AND FARE TYPE TABLES STATE BEFORE OPERATION:")
-            # Mock existing exemption data
             existing_exemptions = [
                 {
                     "exemption_id": 1, 
@@ -288,7 +247,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             
         elif test_name == 'test_exemption_status_report':
             logger.info("EXEMPTION STATUS REPORT TABLES STATE BEFORE OPERATION:")
-            # Mock existing data for the report
             today = date.today()
             
             existing_applications = [
@@ -350,14 +308,12 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             })
     
     def log_table_state_after(self):
-        """Log the table state after the test operation"""
         test_name = self._testMethodName
         
         if test_name == 'test_submit_exemption_application':
             logger.info("EXEMPTION APPLICATION TABLES STATE AFTER OPERATION:")
             
-            # Create updated tables based on the operations performed
-            application_id = 456  # From the mock's lastrowid
+            application_id = 456
             today = date.today()
             passenger_id = 123
             
@@ -374,7 +330,7 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             document_description = "Student ID"
             updated_documents = self.test_data.get('existing_documents', []) + [
                 {
-                    "record_id": 1,  # Assuming first record
+                    "record_id": 1,
                     "application_id": application_id,
                     "document_type": document_description,
                     "document_value": file_location
@@ -388,7 +344,7 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             
             updated_activity_logs = self.test_data.get('existing_activity_logs', []) + [
                 {
-                    "log_id": 1,  # Assuming first log
+                    "log_id": 1,
                     "activity_type": "application_creation",
                     "description": log_description,
                     "entity_id": application_id,
@@ -411,7 +367,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             logger.info(f"3. New activity_log entry created:")
             logger.info(f"   - Description: {log_description}")
             
-            # Log the SQL operations for auditing
             logger.info("\nSQL OPERATIONS EXECUTED:")
             for call in self.mock_cursor.execute.call_args_list:
                 args, kwargs = call
@@ -421,7 +376,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                     logger.info(f"- {query}")
                     logger.info(f"  Params: {params}")
             
-            # Track operations performed
             self.test_data['operations_performed'].extend([
                 f"Created exemption application with ID {application_id} for passenger {passenger_id}",
                 f"Stored document record '{document_description}' with path '{file_location}'",
@@ -431,14 +385,12 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         elif test_name == 'test_pending_application_check':
             logger.info("OPERATION DETAILS: Checking for pending applications")
             
-            # No state changes, just queries
             existing_applications = self.test_data.get('existing_applications', [])
             pending_app = next((app for app in existing_applications if app["passenger_id"] == 123 and app["status"] in ["Submitted", "Pending"]), None)
             
             logger.info(f"QUERY RESULT: Found pending application: {pending_app}")
             logger.info("Table state unchanged - read-only operation")
             
-            # Track operation
             self.test_data['operations_performed'].append(
                 f"Verified pending application exists for passenger ID 123"
             )
@@ -446,12 +398,9 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         elif test_name == 'test_view_exemptions':
             logger.info("OPERATION DETAILS: Viewing passenger exemptions")
             
-            # No state changes, just queries
             logger.info("Table state unchanged - read-only operation")
             
-            # Format the result for better readability
             if hasattr(self.mock_execute_query, 'side_effect') and isinstance(self.mock_execute_query.side_effect, list):
-                # Handle list of return values
                 if len(self.mock_execute_query.side_effect) > 1:
                     exemptions = self.mock_execute_query.side_effect[1]
                     logger.info("RETRIEVED EXEMPTIONS:")
@@ -462,7 +411,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             else:
                 logger.info("Mock not configured with side_effect as list")
             
-            # Track operation
             self.test_data['operations_performed'].append(
                 f"Retrieved and displayed exemptions for passenger ID 123"
             )
@@ -470,18 +418,13 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         elif test_name == 'test_exemption_status_report':
             logger.info("OPERATION DETAILS: Generating exemption status report")
             
-            # No state changes, just queries to generate the report
             logger.info("Table state unchanged - read-only report generation")
             
             try:
-                # Safely access mock data if available
                 if hasattr(self.mock_execute_query, 'side_effect'):
-                    # Handle different types of mock side_effect
                     if isinstance(self.mock_execute_query.side_effect, list):
-                        # Summarize the data retrieved for the report
                         logger.info("REPORT DATA SUMMARY:")
                         
-                        # Applications - safely access the mock data
                         if len(self.mock_execute_query.side_effect) > 1:
                             applications = self.mock_execute_query.side_effect[1]
                             logger.info(f"1. Retrieved application(s):")
@@ -490,7 +433,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                         else:
                             logger.info("1. No applications data available in mock")
                         
-                        # Approved applications
                         if len(self.mock_execute_query.side_effect) > 2:
                             approved_apps = self.mock_execute_query.side_effect[2]
                             logger.info(f"2. Retrieved approved application(s):")
@@ -499,7 +441,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                         else:
                             logger.info("2. No approved applications data available in mock")
                         
-                        # Active exemptions
                         if len(self.mock_execute_query.side_effect) > 3:
                             exemptions = self.mock_execute_query.side_effect[3]
                             logger.info(f"3. Retrieved active exemption(s):")
@@ -512,37 +453,31 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                 else:
                     logger.info("Mock doesn't have side_effect configured")
             
-                # Track operation
                 self.test_data['operations_performed'].append(
                     f"Generated comprehensive exemption status report for passenger 123"
                 )
             except Exception as e:
                 logger.error(f"Error accessing mock data: {str(e)}")
-                # Still add the operation to indicate what was attempted
                 self.test_data['operations_performed'].append(
                     f"Attempted to generate exemption status report (error: {str(e)})"
                 )
     
     def validate_report(self):
-        """Validate report generation for report tests"""
         test_name = self._testMethodName
         
         if test_name == 'test_exemption_status_report':
             logger.info("REPORT VALIDATION: Exemption Status Report")
             logger.info("Data used for report generation:")
             
-            # Safely access side_effect data by converting to a list first if it's an iterator
             mock_data = []
             if hasattr(self.mock_execute_query, 'side_effect'):
                 if hasattr(self.mock_execute_query.side_effect, '__iter__'):
                     try:
-                        # Convert iterator to a list if needed
                         if not isinstance(self.mock_execute_query.side_effect, list):
                             mock_data = list(self.mock_execute_query.side_effect)
                         else:
                             mock_data = self.mock_execute_query.side_effect
                         
-                        # Now safely access mock data by index
                         if len(mock_data) > 0:
                             passenger = mock_data[0]
                             logger.info("1. First query - Get passenger details:")
@@ -596,50 +531,40 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             logger.info("✓ Report correctly displays approved exemptions with fare type details")
             logger.info("✓ Report correctly shows active exemptions with expiration information")
             
-            # Track data validation
             self.test_data['operations_performed'] = self.test_data.get('operations_performed', [])
             self.test_data['operations_performed'].append(
                 "Validated report data selection and aggregation for correctness"
             )
 
     async def test_submit_exemption_application(self):
-        """Test the SQL operations for submitting an exemption application"""
         self.log_table_state_before()
         
-        # Mock the successful inserts
-        self.mock_cursor.lastrowid = 456  # Mock application ID
+        self.mock_cursor.lastrowid = 456
         
-        # Setup the test parameters
         passenger_id = 123
         exemption_category = "Student"
         fare_type_id = 2
         document_description = "Student ID"
         
-        # Mock document file
         mock_file_content = b"test content"
         mock_file = MagicMock()
         mock_file.read = AsyncMock(return_value=mock_file_content)
         mock_file.filename = "student_id.pdf"
         mock_file.content_type = "application/pdf"
         
-        # Mock existing applications check
         self.mock_execute_query.side_effect = [
-            [{"passenger_id": 123, "passenger_full_name": "Test User"}],  # Passenger exists
-            [{"fare_type_id": 2, "type_name": "Student"}],  # Fare type exists
-            []  # No pending applications
+            [{"passenger_id": 123, "passenger_full_name": "Test User"}],
+            [{"fare_type_id": 2, "type_name": "Student"}],
+            []
         ]
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query, get_db_connection, close_connection
         
-        # Execute the exemption application submission operation
         today = date.today()
         
-        # Start transaction
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # First insert the application
         app_query = """
             INSERT INTO exemption_application (submitted_date, passenger_id, status) 
             VALUES (%s, %s, %s)
@@ -647,16 +572,12 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         app_params = (today, passenger_id, "Submitted")
         cursor.execute(app_query, app_params)
         
-        # Get the new application ID
         application_id = cursor.lastrowid
         
-        # Create a unique filename to prevent overwriting
         unique_filename = "test-uuid.pdf"
         file_location = f"uploads/{unique_filename}"
         
-        # Save the document to file (mock)
         with patch('builtins.open', MagicMock()):
-            # Insert document record
             doc_query = """
                 INSERT INTO document_record (application_id, document_type, document_value) 
                 VALUES (%s, %s, %s)
@@ -664,7 +585,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             doc_params = (application_id, document_description, file_location)
             cursor.execute(doc_query, doc_params)
             
-            # Log the creation of a new exemption application
             log_query = """
                 INSERT INTO activity_log (activity_type, description, entity_id, entity_type, created_at)
                 VALUES (%s, %s, %s, %s, NOW())
@@ -675,44 +595,35 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             log_params = ("application_creation", log_description, application_id, "exemption_application")
             cursor.execute(log_query, log_params)
         
-        # Commit transaction
         conn.commit()
         cursor.close()
         close_connection(conn)
         
-        # Assert that the operations were called with the correct parameters
-        # Use normalized SQL comparison
         self.mock_cursor.execute.assert_any_call(app_query, app_params)
         self.mock_cursor.execute.assert_any_call(doc_query, doc_params)
         self.mock_cursor.execute.assert_any_call(log_query, log_params)
-        self.assertEqual(self.mock_cursor.execute.call_count, 3)  # Three SQL operations
+        self.assertEqual(self.mock_cursor.execute.call_count, 3)
         self.mock_conn.commit.assert_called_once()
         self.mock_close_connection.assert_called_once_with(self.mock_conn)
         
         self.log_table_state_after()
 
     def test_pending_application_check(self):
-        """Test the SQL operations for checking pending applications"""
         self.log_table_state_before()
         
-        # Setup the test parameters
         passenger_id = 123
         
-        # Mock finding a pending application
         self.mock_execute_query.return_value = [
             {"application_id": 1, "status": "Submitted"}
         ]
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query
         
-        # Check for existing applications
         existing_app = execute_query("""
             SELECT * FROM exemption_application 
             WHERE passenger_id = %s AND status IN ('Submitted', 'Pending')
         """, (passenger_id,))
         
-        # Assert the query was called correctly - using normalized SQL comparison
         expected_sql = normalize_sql("""
             SELECT * FROM exemption_application 
             WHERE passenger_id = %s AND status IN ('Submitted', 'Pending')
@@ -721,31 +632,24 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         for call_args in self.mock_execute_query.call_args_list:
             args, kwargs = call_args
             if args and len(args) > 0:
-                # Check if the normalized SQL strings match
                 if normalize_sql(args[0]) == expected_sql and args[1] == (passenger_id,):
-                    # Found the right call
                     break
         else:
             self.fail(f"Expected execute_query call with normalized query {expected_sql} not found")
         
-        # Assert that a pending application was found
         self.assertTrue(existing_app)
         self.assertEqual(existing_app[0]["application_id"], 1)
         self.assertEqual(existing_app[0]["status"], "Submitted")
         
         self.log_table_state_after()
 
-    # 2.4: View Passenger Exemptions
     def test_view_exemptions(self):
-        """Test the SQL operations for viewing passenger exemptions"""
         self.log_table_state_before()
         
-        # Setup the test parameters
         passenger_id = 123
         
-        # Mock the query results
         self.mock_execute_query.side_effect = [
-            [{"passenger_id": passenger_id, "passenger_full_name": "Test User"}],  # Passenger exists
+            [{"passenger_id": passenger_id, "passenger_full_name": "Test User"}],
             [
                 {
                     "exemption_id": 1,
@@ -753,16 +657,13 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                     "type_name": "Student Fare",
                     "status": "Approved"
                 }
-            ]  # Exemptions found
+            ]
         ]
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query
         
-        # Check if passenger exists
         passenger = execute_query("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,))
         
-        # Get all exemptions for the passenger with detailed information
         exemptions = execute_query("""
             SELECT e.*, ft.type_name, ea.status
             FROM exemption e
@@ -771,7 +672,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             WHERE e.passenger_id = %s
         """, (passenger_id,))
         
-        # Assert the queries were called correctly - using normalized SQL
         self.mock_execute_query.assert_any_call("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,))
         
         expected_exemptions_sql = normalize_sql("""
@@ -786,14 +686,12 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         for call_args in self.mock_execute_query.call_args_list:
             args, kwargs = call_args
             if args and len(args) > 0:
-                # Check if the normalized SQL strings match
                 if normalize_sql(args[0]) == expected_exemptions_sql and args[1] == (passenger_id,):
                     found_exemptions_call = True
                     break
         
         self.assertTrue(found_exemptions_call, f"Expected execute_query call with normalized query {expected_exemptions_sql} not found")
         
-        # Assert the results
         self.assertTrue(passenger)
         self.assertEqual(passenger[0]["passenger_id"], passenger_id)
         self.assertEqual(exemptions[0]["exemption_id"], 1)
@@ -802,18 +700,14 @@ class TestExemptionApplicationOperations(unittest.TestCase):
         
         self.log_table_state_after()
 
-    # 2.5: View Exemption Application Status Report
     def test_exemption_status_report(self):
-        """Test the SQL operations for generating an exemption status report"""
         self.log_table_state_before()
         
-        # Setup the test parameters
         passenger_id = 123
         today = date.today()
         
-        # Mock the query results
         self.mock_execute_query.side_effect = [
-            [{"passenger_id": passenger_id, "passenger_full_name": "Test User"}],  # Passenger exists
+            [{"passenger_id": passenger_id, "passenger_full_name": "Test User"}],
             [
                 {
                     "application_id": 1, 
@@ -821,7 +715,7 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                     "submitted_date": today,
                     "document_type": "Student ID"
                 }
-            ],  # Applications
+            ],
             [
                 {
                     "application_id": 1, 
@@ -829,7 +723,7 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                     "description": "For students", 
                     "exemption_id": 1
                 }
-            ],  # Approved applications with fare type info
+            ],
             [
                 {
                     "exemption_id": 1, 
@@ -839,16 +733,13 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                     "valid_to": today.replace(year=today.year + 1),
                     "days_remaining": 365
                 }
-            ]  # Current active exemptions
+            ]
         ]
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query
         
-        # Check if passenger exists
         passenger = execute_query("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,))
         
-        # Get all applications for the passenger with document information
         applications = execute_query("""
             SELECT ea.*, dr.document_type
             FROM exemption_application ea
@@ -857,7 +748,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             ORDER BY ea.submitted_date DESC
         """, (passenger_id,))
         
-        # Get approved applications with fare type information
         approved_applications = execute_query("""
             SELECT ea.application_id, ft.type_name, ft.description, e.exemption_id
             FROM exemption_application ea
@@ -870,7 +760,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             WHERE ea.passenger_id = %s AND ea.status = 'Approved'
         """, (passenger_id,))
         
-        # Get current active exemptions for the passenger
         exemptions = execute_query("""
             SELECT e.*, ft.type_name, 
                 DATEDIFF(e.valid_to, CURDATE()) as days_remaining
@@ -880,7 +769,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             ORDER BY e.valid_to DESC
         """, (passenger_id,))
         
-        # Assert the queries were called correctly using normalized SQL
         self.mock_execute_query.assert_any_call(
             "SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,))
         
@@ -913,7 +801,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
             """)
         }
 
-        # Check that each expected query was called
         for call_args in self.mock_execute_query.call_args_list:
             args, kwargs = call_args
             if args and len(args) > 0:
@@ -921,14 +808,11 @@ class TestExemptionApplicationOperations(unittest.TestCase):
                 
                 for query_name, expected_sql in list(call_queries.items()):
                     if normalized_query == expected_sql and args[1] == (passenger_id,):
-                        # Found the query, remove it from our check list
                         del call_queries[query_name]
                         break
         
-        # If our dictionary is empty, all queries were found
         self.assertEqual(len(call_queries), 0, f"Some expected queries were not called: {call_queries.keys()}")
         
-        # Assert the results
         self.assertTrue(passenger)
         self.assertEqual(passenger[0]["passenger_id"], passenger_id)
         self.assertEqual(applications[0]["application_id"], 1)
@@ -942,7 +826,6 @@ class TestExemptionApplicationOperations(unittest.TestCase):
 
 class TestExemptionApplications(unittest.TestCase):
     def setUp(self):
-        # Mock the database connection and cursor
         self.mock_execute_query_patcher = patch('app.database.config.execute_query')
         self.mock_execute_query = self.mock_execute_query_patcher.start()
         
@@ -957,33 +840,28 @@ class TestExemptionApplications(unittest.TestCase):
         self.mock_conn.cursor.return_value = self.mock_cursor
         self.mock_get_db_connection.return_value = self.mock_conn
         
-        # Store test data for reporting
         self.test_data = {
-            'operations_performed': []  # Track operations for better reporting
+            'operations_performed': []
         }
 
     def tearDown(self):
         self.mock_execute_query_patcher.stop()
         self.mock_get_db_connection_patcher.stop()
         
-        # Print summary of operations performed
         logger.info("\nOPERATIONS SUMMARY:")
         for idx, op in enumerate(self.test_data.get('operations_performed', []), 1):
             logger.info(f"{idx}. {op}")
     
     def log_table_state_before(self):
-        """Log the table state before the test operation"""
         test_name = self._testMethodName
         
         if test_name == 'test_submit_exemption_application':
-            # Define test data
             passenger_id = 1
             category_id = 2
             supporting_doc = "disability_certificate.pdf"
             application_date = date.today()
             status = "Pending"
             
-            # Mock state of tables before operation
             existing_passengers = [
                 {"passenger_id": passenger_id, "passenger_full_name": "John Doe", "email": "john@example.com"}
             ]
@@ -1007,7 +885,6 @@ class TestExemptionApplications(unittest.TestCase):
             
             logger.info("\nexemption_application TABLE: []")
             
-            # Store test data
             self.test_data.update({
                 'passenger_id': passenger_id,
                 'category_id': category_id,
@@ -1020,23 +897,19 @@ class TestExemptionApplications(unittest.TestCase):
             })
     
     def log_table_state_after(self):
-        """Log the table state after the test operation"""
         test_name = self._testMethodName
         
         if test_name == 'test_submit_exemption_application':
-            # Get test data
             passenger_id = self.test_data['passenger_id']
             category_id = self.test_data['category_id']
             supporting_doc = self.test_data['supporting_doc']
             application_date = self.test_data['application_date']
             status = self.test_data['status']
-            application_id = 101  # Mock application ID
+            application_id = 101
             
-            # Tables unchanged in this operation
             existing_passengers = self.test_data['existing_passengers']
             existing_exemption_categories = self.test_data['existing_exemption_categories']
             
-            # New records created
             new_exemption_applications = [
                 {
                     "application_id": application_id,
@@ -1068,21 +941,18 @@ class TestExemptionApplications(unittest.TestCase):
             logger.info(f"3. Document '{supporting_doc}' uploaded and associated with application")
             logger.info(f"4. Initial application status set to '{status}'")
             
-            # Track operations performed
             self.test_data['operations_performed'].append(
                 f"Created new exemption application with ID {application_id} for passenger {passenger_id} " +
                 f"in category {category_id} with status '{status}'"
             )
     
     def validate_report(self):
-        """Validate report generation for report tests"""
         test_name = self._testMethodName
         
         if test_name == 'test_submit_exemption_application':
             logger.info("REPORT VALIDATION: Exemption Application Submission")
             
-            # Check submission queries and results
-            application_id = 101  # Mock application ID
+            application_id = 101
             passenger_id = self.test_data['passenger_id']
             category_id = self.test_data['category_id']
             passenger_name = self.test_data['existing_passengers'][0]['passenger_full_name']
@@ -1106,7 +976,6 @@ class TestExemptionApplications(unittest.TestCase):
                 JOIN exemption_category ec ON ea.category_id = ec.category_id
                 WHERE ea.application_id = %s""")
             
-            # Show the expected result data that should be displayed in the confirmation
             logger.info("\nAPPLICATION CONFIRMATION REPORT DATA VALIDATION:")
             logger.info("Application confirmation should display the following information:")
             logger.info(f"Application ID: {application_id}")
@@ -1121,16 +990,13 @@ class TestExemptionApplications(unittest.TestCase):
             logger.info("✓ Report correctly shows passenger information from passenger table")
             logger.info("✓ Report correctly shows exemption category information from exemption_category table")
             
-            # Track the validation
             self.test_data['operations_performed'].append(
                 "Validated exemption application confirmation report correctly displays all related information from multiple tables"
             )
     
     def test_submit_exemption_application(self):
-        """Test the SQL operations for submitting an exemption application"""
         self.log_table_state_before()
         
-        # Define test parameters
         passenger_id = 1
         category_id = 2
         supporting_doc = "disability_certificate.pdf"
@@ -1138,15 +1004,13 @@ class TestExemptionApplications(unittest.TestCase):
         status = "Pending"
         application_id = 101
         
-        # Mock the lastrowid for application insertion
         self.mock_cursor.lastrowid = application_id
         
-        # Mock the execute_query results
         self.mock_execute_query.side_effect = [
-            [{"passenger_id": passenger_id, "passenger_full_name": "John Doe"}],  # Verify passenger
-            [{"category_id": category_id, "category_name": "Disability"}],  # Verify category
-            {"affected_rows": 1, "last_insert_id": application_id},  # Insert application
-            [  # Application details
+            [{"passenger_id": passenger_id, "passenger_full_name": "John Doe"}],
+            [{"category_id": category_id, "category_name": "Disability"}],
+            {"affected_rows": 1, "last_insert_id": application_id},
+            [
                 {
                     "application_id": application_id,
                     "passenger_id": passenger_id,
@@ -1160,13 +1024,11 @@ class TestExemptionApplications(unittest.TestCase):
             ]
         ]
         
-        # Import here to avoid circular imports
         from app.database.config import execute_query, get_db_connection
         
         logger.info("EXECUTING EXEMPTION APPLICATION SUBMISSION:")
         logger.info("Step 1: Verifying passenger exists")
         
-        # First, verify the passenger exists
         passenger = execute_query("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,), fetch=True)
         if not passenger:
             logger.error(f"Passenger with ID {passenger_id} not found")
@@ -1174,7 +1036,6 @@ class TestExemptionApplications(unittest.TestCase):
         logger.info(f"✓ Passenger found: {passenger[0]['passenger_full_name']}")
         
         logger.info("Step 2: Verifying exemption category exists")
-        # Verify the exemption category exists
         category = execute_query("SELECT * FROM exemption_category WHERE category_id = %s", (category_id,), fetch=True)
         if not category:
             logger.error(f"Exemption category with ID {category_id} not found")
@@ -1182,7 +1043,6 @@ class TestExemptionApplications(unittest.TestCase):
         logger.info(f"✓ Exemption category found: {category[0]['category_name']}")
         
         logger.info("Step 3: Creating exemption application record")
-        # Create a new exemption application
         application_query = """
             INSERT INTO exemption_application (passenger_id, category_id, supporting_document, application_date, status)
             VALUES (%s, %s, %s, %s, %s)
@@ -1191,7 +1051,6 @@ class TestExemptionApplications(unittest.TestCase):
         logger.info(f"SQL: {application_query}")
         logger.info(f"Params: {application_params}")
         
-        # Execute in transaction
         logger.info("Step 4: Beginning database transaction")
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -1205,7 +1064,6 @@ class TestExemptionApplications(unittest.TestCase):
         logger.info("✓ Transaction committed successfully")
         
         logger.info("Step 6: Retrieving application details for confirmation")
-        # Get detailed application information for confirmation
         application = execute_query("""
             SELECT ea.*, p.passenger_full_name, ec.category_name 
             FROM exemption_application ea
@@ -1219,7 +1077,6 @@ class TestExemptionApplications(unittest.TestCase):
             raise Exception("Application was created but could not be retrieved")
         logger.info("✓ Complete application information retrieved successfully")
         
-        # Log the application details that would be displayed in the confirmation
         logger.info("\nAPPLICATION DETAILS:")
         logger.info(f"Application ID: {application[0]['application_id']}")
         logger.info(f"Passenger: {application[0]['passenger_full_name']} (ID: {application[0]['passenger_id']})")
@@ -1228,11 +1085,9 @@ class TestExemptionApplications(unittest.TestCase):
         logger.info(f"Status: {application[0]['status']}")
         logger.info(f"Supporting Document: {application[0]['supporting_document']}")
         
-        # Assert the queries were called correctly
         self.mock_execute_query.assert_any_call("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,), fetch=True)
         self.mock_execute_query.assert_any_call("SELECT * FROM exemption_category WHERE category_id = %s", (category_id,), fetch=True)
         
-        # Check the complex application query
         expected_application_query = normalize_sql("""
             SELECT ea.*, p.passenger_full_name, ec.category_name 
             FROM exemption_application ea
@@ -1252,7 +1107,6 @@ class TestExemptionApplications(unittest.TestCase):
         
         self.assertTrue(found_application_query, f"Expected execute_query call for application details not found")
         
-        # For SQL executions via cursor
         self.mock_cursor.execute.assert_called_with(application_query, application_params)
         self.mock_conn.commit.assert_called_once()
         
