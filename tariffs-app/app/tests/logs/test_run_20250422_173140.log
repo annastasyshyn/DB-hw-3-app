@@ -1,0 +1,137 @@
+2025-04-22 17:31:40,921 - tariffs_test - INFO - Adding passenger registration and exemption application tests
+2025-04-22 17:31:40,921 - tariffs_test - INFO - Adding fare type management and exemption processing tests
+2025-04-22 17:31:40,921 - tariffs_test - INFO - Adding fare calculation and ticketing operation tests
+2025-04-22 17:31:40,921 - tariffs_test - INFO - Adding document storage and processing tests
+2025-04-22 17:31:40,921 - tariffs_test - INFO - 
+################################################################################
+2025-04-22 17:31:40,921 - tariffs_test - INFO - # TEST PLAN EXECUTION SUMMARY
+2025-04-22 17:31:40,921 - tariffs_test - INFO - # Running 26 tests to validate:
+2025-04-22 17:31:40,921 - tariffs_test - INFO - #  1. All operations that result in data changes
+2025-04-22 17:31:40,921 - tariffs_test - INFO - #  2. Table state before and after operations
+2025-04-22 17:31:40,921 - tariffs_test - INFO - #  3. Correctness of data selection and aggregation for reports
+2025-04-22 17:31:40,921 - tariffs_test - INFO - ################################################################################
+
+2025-04-22 17:31:40,921 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestPassengerRegistrationOperations.test_create_passenger
+2025-04-22 17:31:40,921 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for creating a passenger
+2025-04-22 17:31:40,921 - tariffs_test - INFO - OPERATION TYPE: INSERT OPERATION
+2025-04-22 17:31:40,921 - tariffs_test - INFO - AFFECTED TABLES: passenger
+2025-04-22 17:31:40,921 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:31:40,921 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:31:40,921 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:31:40,921 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,953 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:31:40,953 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:31:40,953 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,953 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:31:40,953 - tariffs_test - INFO - INSERT OPERATION performed:
+2025-04-22 17:31:40,953 - tariffs_test - INFO -   - Query: 
+            INSERT INTO passenger (passenger_full_name, email) 
+            VALUES (%s, %s)
+        
+2025-04-22 17:31:40,953 - tariffs_test - INFO -   - Parameters: ('Test User', 'test@example.com')
+2025-04-22 17:31:40,953 - tariffs_test - INFO - Updated passenger table state:
+2025-04-22 17:31:40,953 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,953 - tariffs_test - INFO -   - ID: 123, Name: Test User, Email: test@example.com
+2025-04-22 17:31:40,953 - tariffs_test - INFO - DATA CHANGE SUMMARY: New passenger record created with ID: 123
+2025-04-22 17:31:40,953 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:31:40,953 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - INSERT OPERATION performed:
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - Query: 
+            INSERT INTO passenger (passenger_full_name, email) 
+            VALUES (%s, %s)
+        
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - Parameters: ('Test User', 'test@example.com')
+2025-04-22 17:31:40,954 - tariffs_test - INFO - Updated passenger table state:
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - ID: 123, Name: Test User, Email: test@example.com
+2025-04-22 17:31:40,954 - tariffs_test - INFO - DATA CHANGE SUMMARY: New passenger record created with ID: 123
+2025-04-22 17:31:40,954 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:31:40,954 - tariffs_test - INFO - - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:31:40,954 - tariffs_test - INFO - FINISHED TEST: TestPassengerRegistrationOperations.test_create_passenger
+================================================================================
+
+2025-04-22 17:31:40,954 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestPassengerRegistrationOperations.test_email_already_exists
+2025-04-22 17:31:40,954 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations when email already exists
+2025-04-22 17:31:40,954 - tariffs_test - INFO - OPERATION TYPE: MIXED OPERATIONS
+2025-04-22 17:31:40,954 - tariffs_test - INFO - AFFECTED TABLES: passenger
+2025-04-22 17:31:40,954 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,954 - tariffs_test - INFO - VALIDATION CHECK: Checking if email 'existing@example.com' already exists
+2025-04-22 17:31:40,954 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,954 - tariffs_test - INFO - VALIDATION CHECK: Checking if email 'existing@example.com' already exists
+2025-04-22 17:31:40,954 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:31:40,954 - tariffs_test - INFO - VALIDATION RESULT: Operation prevented - email 'existing@example.com' already exists in the database
+2025-04-22 17:31:40,954 - tariffs_test - INFO - Passenger table state unchanged:
+2025-04-22 17:31:40,954 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,954 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:31:40,955 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - VALIDATION RESULT: Operation prevented - email 'existing@example.com' already exists in the database
+2025-04-22 17:31:40,955 - tariffs_test - INFO - Passenger table state unchanged:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:31:40,955 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - - Passenger creation prevented due to duplicate email 'existing@example.com'
+2025-04-22 17:31:40,955 - tariffs_test - INFO - - Passenger creation prevented due to duplicate email 'existing@example.com'
+2025-04-22 17:31:40,955 - tariffs_test - INFO - FINISHED TEST: TestPassengerRegistrationOperations.test_email_already_exists
+================================================================================
+
+2025-04-22 17:31:40,955 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionApplicationOperations.test_exemption_status_report
+2025-04-22 17:31:40,955 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for generating an exemption status report
+2025-04-22 17:31:40,955 - tariffs_test - INFO - OPERATION TYPE: REPORT GENERATION
+2025-04-22 17:31:40,955 - tariffs_test - INFO - AFFECTED TABLES: exemption_application, exemption
+2025-04-22 17:31:40,955 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - EXEMPTION STATUS REPORT TABLES STATE BEFORE OPERATION:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - DATABASE STATE FOR REPORT GENERATION:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Application ID: 1, Status: Approved, Date: 2025-04-22
+2025-04-22 17:31:40,955 - tariffs_test - INFO - document_record table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Record ID: 1, Doc Type: Student ID
+2025-04-22 17:31:40,955 - tariffs_test - INFO - exemption table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid days remaining: 365
+2025-04-22 17:31:40,955 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Type ID: 2, Name: Student Fare
+2025-04-22 17:31:40,955 - tariffs_test - INFO - EXEMPTION STATUS REPORT TABLES STATE BEFORE OPERATION:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - DATABASE STATE FOR REPORT GENERATION:
+2025-04-22 17:31:40,955 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Application ID: 1, Status: Approved, Date: 2025-04-22
+2025-04-22 17:31:40,955 - tariffs_test - INFO - document_record table:
+2025-04-22 17:31:40,955 - tariffs_test - INFO -   - Record ID: 1, Doc Type: Student ID
+2025-04-22 17:31:40,955 - tariffs_test - INFO - exemption table:
+2025-04-22 17:31:40,956 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid days remaining: 365
+2025-04-22 17:31:40,956 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:31:40,956 - tariffs_test - INFO -   - Type ID: 2, Name: Student Fare
+2025-04-22 17:31:40,956 - tariffs_test - INFO - OPERATION DETAILS: Generating exemption status report
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Table state unchanged - read-only report generation
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Mock side_effect is not a list, unable to access specific results
+2025-04-22 17:31:40,956 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:31:40,956 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:31:40,956 - tariffs_test - INFO - OPERATION DETAILS: Generating exemption status report
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Table state unchanged - read-only report generation
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Mock side_effect is not a list, unable to access specific results
+2025-04-22 17:31:40,956 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:31:40,956 - tariffs_test - INFO - REPORT VALIDATION: Exemption Status Report
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Data used for report generation:
+2025-04-22 17:31:40,956 - tariffs_test - INFO - 1. First query - Get passenger details:
+2025-04-22 17:31:40,956 - tariffs_test - INFO - SQL: SELECT * FROM passenger WHERE passenger_id = %s
+2025-04-22 17:31:40,956 - tariffs_test - INFO - Parameters: (123,)

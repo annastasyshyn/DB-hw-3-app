@@ -1,0 +1,24 @@
+2025-04-22 17:25:39,234 - tariffs_test - INFO - Adding passenger registration and exemption application tests
+2025-04-22 17:25:39,235 - tariffs_test - INFO - Adding fare type management and exemption processing tests
+2025-04-22 17:25:39,235 - tariffs_test - INFO - Adding fare calculation and ticketing operation tests
+2025-04-22 17:25:39,235 - tariffs_test - INFO - Adding document storage and processing tests
+2025-04-22 17:25:39,235 - tariffs_test - INFO - 
+################################################################################
+2025-04-22 17:25:39,235 - tariffs_test - INFO - # TEST PLAN EXECUTION SUMMARY
+2025-04-22 17:25:39,235 - tariffs_test - INFO - # Running 26 tests to validate:
+2025-04-22 17:25:39,235 - tariffs_test - INFO - #  1. All operations that result in data changes
+2025-04-22 17:25:39,235 - tariffs_test - INFO - #  2. Table state before and after operations
+2025-04-22 17:25:39,235 - tariffs_test - INFO - #  3. Correctness of data selection and aggregation for reports
+2025-04-22 17:25:39,235 - tariffs_test - INFO - ################################################################################
+
+2025-04-22 17:25:39,235 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestPassengerRegistrationOperations.test_create_passenger
+2025-04-22 17:25:39,235 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for creating a passenger
+2025-04-22 17:25:39,235 - tariffs_test - INFO - OPERATION TYPE: INSERT OPERATION
+2025-04-22 17:25:39,235 - tariffs_test - INFO - AFFECTED TABLES: passenger
+2025-04-22 17:25:39,235 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:25:39,235 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:25:39,235 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:25:39,236 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com

@@ -1,0 +1,386 @@
+2025-04-22 17:49:32,981 - tariffs_test - INFO - Adding passenger registration and exemption application tests
+2025-04-22 17:49:32,982 - tariffs_test - INFO - Adding fare type management and exemption processing tests
+2025-04-22 17:49:32,982 - tariffs_test - INFO - Adding fare calculation and ticketing operation tests
+2025-04-22 17:49:32,982 - tariffs_test - INFO - Adding document storage and processing tests
+2025-04-22 17:49:32,982 - tariffs_test - INFO - 
+################################################################################
+2025-04-22 17:49:32,982 - tariffs_test - INFO - # TEST PLAN EXECUTION SUMMARY
+2025-04-22 17:49:32,982 - tariffs_test - INFO - # Running 22 tests to validate:
+2025-04-22 17:49:32,982 - tariffs_test - INFO - #  1. All operations that result in data changes
+2025-04-22 17:49:32,982 - tariffs_test - INFO - #  2. Table state before and after operations
+2025-04-22 17:49:32,982 - tariffs_test - INFO - #  3. Correctness of data selection and aggregation for reports
+2025-04-22 17:49:32,982 - tariffs_test - INFO - ################################################################################
+
+2025-04-22 17:49:32,982 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestPassengerRegistrationOperations.test_create_passenger
+2025-04-22 17:49:32,982 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for creating a passenger
+2025-04-22 17:49:32,982 - tariffs_test - INFO - OPERATION TYPE: INSERT OPERATION
+2025-04-22 17:49:32,982 - tariffs_test - INFO - AFFECTED TABLES: passenger
+2025-04-22 17:49:32,982 - tariffs_test - INFO - TEST COVERAGE: Data Modification
+2025-04-22 17:49:32,982 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:32,982 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:32,982 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:49:32,982 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,004 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:33,004 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,004 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:49:33,004 - tariffs_test - INFO - INSERT OPERATION performed:
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - Query: 
+            INSERT INTO passenger (passenger_full_name, email) 
+            VALUES (%s, %s)
+        
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - Parameters: ('Test User', 'test@example.com')
+2025-04-22 17:49:33,004 - tariffs_test - INFO - Updated passenger table state:
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - ID: 123, Name: Test User, Email: test@example.com
+2025-04-22 17:49:33,004 - tariffs_test - INFO - DATA CHANGE SUMMARY: New passenger record created with ID: 123
+2025-04-22 17:49:33,004 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,004 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,004 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,004 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:49:33,004 - tariffs_test - INFO - INSERT OPERATION performed:
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - Query: 
+            INSERT INTO passenger (passenger_full_name, email) 
+            VALUES (%s, %s)
+        
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - Parameters: ('Test User', 'test@example.com')
+2025-04-22 17:49:33,004 - tariffs_test - INFO - Updated passenger table state:
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,004 - tariffs_test - INFO -   - ID: 123, Name: Test User, Email: test@example.com
+2025-04-22 17:49:33,005 - tariffs_test - INFO - DATA CHANGE SUMMARY: New passenger record created with ID: 123
+2025-04-22 17:49:33,005 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:49:33,005 - tariffs_test - INFO - - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:49:33,005 - tariffs_test - INFO - ✅ INSERT operations performed
+2025-04-22 17:49:33,005 - tariffs_test - INFO - 
+DATABASE STATE CHANGE SUMMARY:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - Table 'passenger':
+2025-04-22 17:49:33,005 - tariffs_test - INFO -   - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:49:33,005 - tariffs_test - INFO -   - Created passenger with name 'Test User' and email 'test@example.com'
+2025-04-22 17:49:33,005 - tariffs_test - INFO - FINISHED TEST: TestPassengerRegistrationOperations.test_create_passenger
+================================================================================
+
+2025-04-22 17:49:33,005 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestPassengerRegistrationOperations.test_email_already_exists
+2025-04-22 17:49:33,005 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations when email already exists
+2025-04-22 17:49:33,005 - tariffs_test - INFO - OPERATION TYPE: MIXED OPERATIONS
+2025-04-22 17:49:33,005 - tariffs_test - INFO - AFFECTED TABLES: passenger
+2025-04-22 17:49:33,005 - tariffs_test - INFO - TEST COVERAGE: Data Query/Report
+2025-04-22 17:49:33,005 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:49:33,005 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,005 - tariffs_test - INFO - VALIDATION CHECK: Checking if email 'existing@example.com' already exists
+2025-04-22 17:49:33,005 - tariffs_test - INFO - PASSENGER TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - Initial passenger table state:
+2025-04-22 17:49:33,005 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,005 - tariffs_test - INFO - VALIDATION CHECK: Checking if email 'existing@example.com' already exists
+2025-04-22 17:49:33,005 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:49:33,005 - tariffs_test - INFO - VALIDATION RESULT: Operation prevented - email 'existing@example.com' already exists in the database
+2025-04-22 17:49:33,005 - tariffs_test - INFO - Passenger table state unchanged:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,006 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,006 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,006 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - PASSENGER TABLE STATE AFTER OPERATION:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - VALIDATION RESULT: Operation prevented - email 'existing@example.com' already exists in the database
+2025-04-22 17:49:33,006 - tariffs_test - INFO - Passenger table state unchanged:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - ID: 1, Name: Existing User, Email: existing@example.com
+2025-04-22 17:49:33,006 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - - Passenger creation prevented due to duplicate email 'existing@example.com'
+2025-04-22 17:49:33,006 - tariffs_test - INFO - - Passenger creation prevented due to duplicate email 'existing@example.com'
+2025-04-22 17:49:33,006 - tariffs_test - INFO - FINISHED TEST: TestPassengerRegistrationOperations.test_email_already_exists
+================================================================================
+
+2025-04-22 17:49:33,006 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionApplicationOperations.test_exemption_status_report
+2025-04-22 17:49:33,006 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for generating an exemption status report
+2025-04-22 17:49:33,006 - tariffs_test - INFO - OPERATION TYPE: REPORT GENERATION
+2025-04-22 17:49:33,006 - tariffs_test - INFO - AFFECTED TABLES: report_data, exemption, exemption_application
+2025-04-22 17:49:33,006 - tariffs_test - INFO - TEST COVERAGE: Data Query/Report
+2025-04-22 17:49:33,006 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - EXEMPTION STATUS REPORT TABLES STATE BEFORE OPERATION:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - DATABASE STATE FOR REPORT GENERATION:
+2025-04-22 17:49:33,006 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - Application ID: 1, Status: Approved, Date: 2025-04-22
+2025-04-22 17:49:33,006 - tariffs_test - INFO - document_record table:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - Record ID: 1, Doc Type: Student ID
+2025-04-22 17:49:33,006 - tariffs_test - INFO - exemption table:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid days remaining: 365
+2025-04-22 17:49:33,006 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:49:33,006 - tariffs_test - INFO -   - Type ID: 2, Name: Student Fare
+2025-04-22 17:49:33,007 - tariffs_test - INFO - EXEMPTION STATUS REPORT TABLES STATE BEFORE OPERATION:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - DATABASE STATE FOR REPORT GENERATION:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:49:33,007 - tariffs_test - INFO -   - Application ID: 1, Status: Approved, Date: 2025-04-22
+2025-04-22 17:49:33,007 - tariffs_test - INFO - document_record table:
+2025-04-22 17:49:33,007 - tariffs_test - INFO -   - Record ID: 1, Doc Type: Student ID
+2025-04-22 17:49:33,007 - tariffs_test - INFO - exemption table:
+2025-04-22 17:49:33,007 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid days remaining: 365
+2025-04-22 17:49:33,007 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:49:33,007 - tariffs_test - INFO -   - Type ID: 2, Name: Student Fare
+2025-04-22 17:49:33,007 - tariffs_test - INFO - OPERATION DETAILS: Generating exemption status report
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Table state unchanged - read-only report generation
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Mock side_effect is not a list, unable to access specific results
+2025-04-22 17:49:33,007 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,007 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,007 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - OPERATION DETAILS: Generating exemption status report
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Table state unchanged - read-only report generation
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Mock side_effect is not a list, unable to access specific results
+2025-04-22 17:49:33,007 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - REPORT VALIDATION: Exemption Status Report
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Data used for report generation:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - REPORT VALIDATION RESULT:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - ✓ Report correctly displays passenger details
+2025-04-22 17:49:33,007 - tariffs_test - INFO - ✓ Report correctly shows all exemption applications with their status
+2025-04-22 17:49:33,007 - tariffs_test - INFO - ✓ Report correctly displays approved exemptions with fare type details
+2025-04-22 17:49:33,007 - tariffs_test - INFO - ✓ Report correctly shows active exemptions with expiration information
+2025-04-22 17:49:33,007 - tariffs_test - INFO - 
+REPORT VERIFICATION DETAILS:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Input Data: Mock data used in the test
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Query 1: SELECT *
+FROM passenger
+WHERE passenger_id = %s
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Parameters: (123,)
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Query 2: SELECT ea.*, dr.document_type
+FROM exemption_application ea LEFT
+JOIN document_record dr ON ea.application_id = dr.application_id
+WHERE ea.passenger_id = %s
+ORDER BY ea.submitted_date DESC
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Parameters: (123,)
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Query 3: SELECT ea.application_id, ft.type_name, ft.description, e.exemption_id
+FROM exemption_application ea LEFT
+JOIN exemption e ON ( ea.passenger_id = e.passenger_id AND ea.status = 'Approved' AND DATE(ea.submitted_date) <= e.valid_from ) LEFT
+JOIN fare_type ft ON e.fare_type_id = ft.fare_type_id
+WHERE ea.passenger_id = %s AND ea.status = 'Approved'
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Parameters: (123,)
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Query 4: SELECT e.*, ft.type_name, DATEDIFF(e.valid_to, CURDATE()) as days_remaining
+FROM exemption e
+JOIN fare_type ft ON e.fare_type_id = ft.fare_type_id
+WHERE e.passenger_id = %s
+ORDER BY e.valid_to DESC
+2025-04-22 17:49:33,007 - tariffs_test - INFO - Parameters: (123,)
+2025-04-22 17:49:33,007 - tariffs_test - INFO - ⚠️ Check the REPORT VALIDATION section above for the verification of calculations and aggregations
+2025-04-22 17:49:33,007 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,007 - tariffs_test - INFO - - Generated comprehensive exemption status report for passenger 123
+2025-04-22 17:49:33,007 - tariffs_test - INFO - - Generated comprehensive exemption status report for passenger 123
+2025-04-22 17:49:33,008 - tariffs_test - INFO - - Validated report data selection and aggregation for correctness
+2025-04-22 17:49:33,008 - tariffs_test - INFO - ✅ Validation operations performed
+2025-04-22 17:49:33,008 - tariffs_test - INFO - FINISHED TEST: TestExemptionApplicationOperations.test_exemption_status_report
+================================================================================
+
+2025-04-22 17:49:33,008 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionApplicationOperations.test_pending_application_check
+2025-04-22 17:49:33,008 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for checking pending applications
+2025-04-22 17:49:33,008 - tariffs_test - INFO - OPERATION TYPE: MIXED OPERATIONS
+2025-04-22 17:49:33,008 - tariffs_test - INFO - AFFECTED TABLES: exemption, exemption_application
+2025-04-22 17:49:33,008 - tariffs_test - INFO - TEST COVERAGE: Data Query/Report
+2025-04-22 17:49:33,008 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,008 - tariffs_test - INFO - EXEMPTION APPLICATION TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:33,008 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:49:33,008 - tariffs_test - INFO -   - Application ID: 1, Passenger ID: 123, Status: Submitted
+2025-04-22 17:49:33,008 - tariffs_test - INFO - EXEMPTION APPLICATION TABLE STATE BEFORE OPERATION:
+2025-04-22 17:49:33,008 - tariffs_test - INFO - exemption_application table:
+2025-04-22 17:49:33,008 - tariffs_test - INFO -   - Application ID: 1, Passenger ID: 123, Status: Submitted
+2025-04-22 17:49:33,008 - tariffs_test - INFO - OPERATION DETAILS: Checking for pending applications
+2025-04-22 17:49:33,008 - tariffs_test - INFO - QUERY RESULT: Found pending application: {'application_id': 1, 'passenger_id': 123, 'status': 'Submitted', 'submitted_date': datetime.date(2025, 4, 22)}
+2025-04-22 17:49:33,008 - tariffs_test - INFO - Table state unchanged - read-only operation
+2025-04-22 17:49:33,008 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,008 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,008 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,008 - tariffs_test - INFO - OPERATION DETAILS: Checking for pending applications
+2025-04-22 17:49:33,008 - tariffs_test - INFO - QUERY RESULT: Found pending application: {'application_id': 1, 'passenger_id': 123, 'status': 'Submitted', 'submitted_date': datetime.date(2025, 4, 22)}
+2025-04-22 17:49:33,008 - tariffs_test - INFO - Table state unchanged - read-only operation
+2025-04-22 17:49:33,008 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:49:33,009 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,009 - tariffs_test - INFO - - Verified pending application exists for passenger ID 123
+2025-04-22 17:49:33,009 - tariffs_test - INFO - - Verified pending application exists for passenger ID 123
+2025-04-22 17:49:33,009 - tariffs_test - INFO - FINISHED TEST: TestExemptionApplicationOperations.test_pending_application_check
+================================================================================
+
+2025-04-22 17:49:33,009 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionApplicationOperations.test_submit_exemption_application
+2025-04-22 17:49:33,009 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for submitting an exemption application
+2025-04-22 17:49:33,009 - tariffs_test - INFO - OPERATION TYPE: INSERT OPERATION
+2025-04-22 17:49:33,009 - tariffs_test - INFO - AFFECTED TABLES: exemption, exemption_application
+2025-04-22 17:49:33,009 - tariffs_test - INFO - TEST COVERAGE: Data Modification
+2025-04-22 17:49:33,009 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,009 - tariffs_test - INFO - EXEMPTION APPLICATION TABLES STATE BEFORE OPERATION:
+2025-04-22 17:49:33,009 - tariffs_test - INFO - exemption_application table: [] (EMPTY)
+2025-04-22 17:49:33,009 - tariffs_test - INFO - document_record table: [] (EMPTY)
+2025-04-22 17:49:33,009 - tariffs_test - INFO - activity_log table: [] (EMPTY)
+2025-04-22 17:49:33,013 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,013 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - EXEMPTION APPLICATION TABLES STATE AFTER OPERATION:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - DATA CHANGES SUMMARY:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 1. New exemption_application record created:
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Application ID: 456
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Passenger ID: 123
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Status: Submitted
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Date: 2025-04-22
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 2. New document_record created:
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Document type: Student ID
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - File location: uploads/test-uuid.pdf
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 3. New activity_log entry created:
+2025-04-22 17:49:33,013 - tariffs_test - INFO -    - Description: New exemption application (Student) submitted by Test User for Student
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+SQL OPERATIONS EXECUTED:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - - Created exemption application with ID 456 for passenger 123
+2025-04-22 17:49:33,013 - tariffs_test - INFO - - Stored document record 'Student ID' with path 'uploads/test-uuid.pdf'
+2025-04-22 17:49:33,013 - tariffs_test - INFO - - Created activity log entry for application submission
+2025-04-22 17:49:33,013 - tariffs_test - INFO - ✅ INSERT operations performed
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+DATABASE STATE CHANGE SUMMARY:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - Table 'exemption':
+2025-04-22 17:49:33,013 - tariffs_test - INFO -   - Created exemption application with ID 456 for passenger 123
+2025-04-22 17:49:33,013 - tariffs_test - INFO - Table 'exemption_application': No changes detected
+2025-04-22 17:49:33,013 - tariffs_test - INFO - FINISHED TEST: TestExemptionApplicationOperations.test_submit_exemption_application
+================================================================================
+
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionApplicationOperations.test_view_exemptions
+2025-04-22 17:49:33,013 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for viewing passenger exemptions
+2025-04-22 17:49:33,013 - tariffs_test - INFO - OPERATION TYPE: SELECT OPERATION
+2025-04-22 17:49:33,013 - tariffs_test - INFO - AFFECTED TABLES: exemption, exemption_application
+2025-04-22 17:49:33,013 - tariffs_test - INFO - TEST COVERAGE: Data Query/Report
+2025-04-22 17:49:33,013 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - EXEMPTION AND FARE TYPE TABLES STATE BEFORE OPERATION:
+2025-04-22 17:49:33,013 - tariffs_test - INFO - exemption table:
+2025-04-22 17:49:33,013 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid until: 2026-04-22
+2025-04-22 17:49:33,013 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:49:33,014 - tariffs_test - INFO -   - Fare Type ID: 2, Name: Student Fare
+2025-04-22 17:49:33,014 - tariffs_test - INFO - EXEMPTION AND FARE TYPE TABLES STATE BEFORE OPERATION:
+2025-04-22 17:49:33,014 - tariffs_test - INFO - exemption table:
+2025-04-22 17:49:33,014 - tariffs_test - INFO -   - Exemption ID: 1, Category: Student, Valid until: 2026-04-22
+2025-04-22 17:49:33,014 - tariffs_test - INFO - fare_type table:
+2025-04-22 17:49:33,014 - tariffs_test - INFO -   - Fare Type ID: 2, Name: Student Fare
+2025-04-22 17:49:33,014 - tariffs_test - INFO - OPERATION DETAILS: Viewing passenger exemptions
+2025-04-22 17:49:33,014 - tariffs_test - INFO - Table state unchanged - read-only operation
+2025-04-22 17:49:33,014 - tariffs_test - INFO - Mock not configured with side_effect as list
+2025-04-22 17:49:33,014 - tariffs_test - INFO - RESULT: ✓ SUCCESS
+2025-04-22 17:49:33,014 - tariffs_test - INFO - All SQL operations executed correctly and data state changes verified
+2025-04-22 17:49:33,014 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,014 - tariffs_test - INFO - OPERATION DETAILS: Viewing passenger exemptions
+2025-04-22 17:49:33,014 - tariffs_test - INFO - Table state unchanged - read-only operation
+2025-04-22 17:49:33,014 - tariffs_test - INFO - Mock not configured with side_effect as list
+2025-04-22 17:49:33,014 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:49:33,014 - tariffs_test - INFO - 
+OPERATIONS SUMMARY:
+2025-04-22 17:49:33,014 - tariffs_test - INFO - - Retrieved and displayed exemptions for passenger ID 123
+2025-04-22 17:49:33,014 - tariffs_test - INFO - - Retrieved and displayed exemptions for passenger ID 123
+2025-04-22 17:49:33,014 - tariffs_test - INFO - FINISHED TEST: TestExemptionApplicationOperations.test_view_exemptions
+================================================================================
+
+2025-04-22 17:49:33,015 - tariffs_test - INFO - 
+================================================================================
+STARTING TEST: TestExemptionOperations.test_generate_exemption_statistics
+2025-04-22 17:49:33,015 - tariffs_test - INFO - DESCRIPTION: Test the SQL operations for generating exemption statistics
+2025-04-22 17:49:33,015 - tariffs_test - INFO - OPERATION TYPE: REPORT GENERATION
+2025-04-22 17:49:33,015 - tariffs_test - INFO - AFFECTED TABLES: report_data, exemption, exemption_application
+2025-04-22 17:49:33,015 - tariffs_test - INFO - TEST COVERAGE: Data Query/Report
+2025-04-22 17:49:33,015 - tariffs_test - INFO - 
+TABLE STATE BEFORE TEST:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - READ OPERATION: Generating exemption statistics
+2025-04-22 17:49:33,015 - tariffs_test - INFO - This is a read-only reporting operation, table state remains unchanged
+2025-04-22 17:49:33,015 - tariffs_test - INFO - READ OPERATION: Generating exemption statistics
+2025-04-22 17:49:33,015 - tariffs_test - INFO - This is a read-only reporting operation, table state remains unchanged
+2025-04-22 17:49:33,015 - tariffs_test - INFO - READ OPERATION COMPLETED: No table state changes (read-only operation)
+2025-04-22 17:49:33,015 - tariffs_test - INFO - REPORT VALIDATION: Exemption Statistics Report
+2025-04-22 17:49:33,015 - tariffs_test - INFO - DATA SOURCE VERIFICATION:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - Date Filter: Applications submitted after 2025-03-22
+2025-04-22 17:49:33,015 - tariffs_test - INFO - SQL QUERY VERIFICATION:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - 
+                SELECT 
+                    exemption_category,
+                    COUNT(a.application_id) as total_applications,
+                    SUM(CASE WHEN a.status = 'Approved' THEN 1 ELSE 0 END) as approved,
+                    (SUM(CASE WHEN a.status = 'Approved' THEN 1 ELSE 0 END) / COUNT(a.application_id)) * 100 as approval_rate
+                FROM exemption e
+                JOIN exemption_application a ON e.passenger_id = a.passenger_id
+                WHERE a.submitted_date >= '2025-03-22'
+                GROUP BY exemption_category ORDER BY total_applications DESC
+            
+2025-04-22 17:49:33,015 - tariffs_test - INFO - MOCK DATA FOR TESTING:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - Student: 15/20 applications approved (75.0%)
+2025-04-22 17:49:33,015 - tariffs_test - INFO - Senior: 14/15 applications approved (93.3%)
+2025-04-22 17:49:33,015 - tariffs_test - INFO - CALCULATION VERIFICATION:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - Validating Student: 15/20 = 75.0% approval rate
+2025-04-22 17:49:33,015 - tariffs_test - INFO - ✓ Student approval rate calculation verified correct
+2025-04-22 17:49:33,015 - tariffs_test - INFO - Validating Senior: 14/15 = 93.3% approval rate
+2025-04-22 17:49:33,015 - tariffs_test - INFO - ✓ Senior approval rate calculation verified correct
+2025-04-22 17:49:33,015 - tariffs_test - INFO - CORRECTNESS VERIFICATION:
+2025-04-22 17:49:33,015 - tariffs_test - INFO - ✓ Query correctly filters for applications after the start date
+2025-04-22 17:49:33,015 - tariffs_test - INFO - ✓ Query correctly joins exemption and application tables to link applications to exemption categories
+2025-04-22 17:49:33,016 - tariffs_test - INFO - ✓ Query correctly calculates total applications by exemption category
+2025-04-22 17:49:33,016 - tariffs_test - INFO - ✓ Query correctly uses CASE statement to count only approved applications
+2025-04-22 17:49:33,016 - tariffs_test - INFO - ✓ Query correctly calculates approval rates as percentages
+2025-04-22 17:49:33,016 - tariffs_test - INFO - ✓ Report correctly calculates approval rates for each exemption category
+2025-04-22 17:49:33,017 - tariffs_test - ERROR - RESULT: ✗ ERROR - 'operations_performed'
+2025-04-22 17:49:33,017 - tariffs_test - ERROR - Test execution encountered an error that prevented proper validation
+2025-04-22 17:49:33,017 - tariffs_test - INFO - 
+TABLE STATE AFTER TEST:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - READ OPERATION COMPLETED: No table state changes (read-only operation)
+2025-04-22 17:49:33,017 - tariffs_test - INFO - 
+REPORT VALIDATION:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - REPORT VALIDATION: Exemption Statistics Report
+2025-04-22 17:49:33,017 - tariffs_test - INFO - DATA SOURCE VERIFICATION:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - Date Filter: Applications submitted after 2025-03-22
+2025-04-22 17:49:33,017 - tariffs_test - INFO - SQL QUERY VERIFICATION:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - 
+                SELECT 
+                    exemption_category,
+                    COUNT(a.application_id) as total_applications,
+                    SUM(CASE WHEN a.status = 'Approved' THEN 1 ELSE 0 END) as approved,
+                    (SUM(CASE WHEN a.status = 'Approved' THEN 1 ELSE 0 END) / COUNT(a.application_id)) * 100 as approval_rate
+                FROM exemption e
+                JOIN exemption_application a ON e.passenger_id = a.passenger_id
+                WHERE a.submitted_date >= '2025-03-22'
+                GROUP BY exemption_category ORDER BY total_applications DESC
+            
+2025-04-22 17:49:33,017 - tariffs_test - INFO - MOCK DATA FOR TESTING:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - Student: 15/20 applications approved (75.0%)
+2025-04-22 17:49:33,017 - tariffs_test - INFO - Senior: 14/15 applications approved (93.3%)
+2025-04-22 17:49:33,017 - tariffs_test - INFO - CALCULATION VERIFICATION:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - Validating Student: 15/20 = 75.0% approval rate
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Student approval rate calculation verified correct
+2025-04-22 17:49:33,017 - tariffs_test - INFO - Validating Senior: 14/15 = 93.3% approval rate
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Senior approval rate calculation verified correct
+2025-04-22 17:49:33,017 - tariffs_test - INFO - CORRECTNESS VERIFICATION:
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Query correctly filters for applications after the start date
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Query correctly joins exemption and application tables to link applications to exemption categories
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Query correctly calculates total applications by exemption category
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Query correctly uses CASE statement to count only approved applications
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Query correctly calculates approval rates as percentages
+2025-04-22 17:49:33,017 - tariffs_test - INFO - ✓ Report correctly calculates approval rates for each exemption category
