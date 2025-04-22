@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Tariffs & Exemptions System{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h2>Welcome to the Public Transport Tariffs & Exemptions System</h2>
+    <p class="lead">Please select your role to continue:</p>
+    
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Passenger</h5>
+                    <p class="card-text">Submit exemption requests and view your existing exemptions.</p>
+                    <a href="/passenger/dashboard" class="btn btn-primary">Continue as Passenger</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ticketing Staff</h5>
+                    <p class="card-text">Calculate fares, apply exemptions, and issue tickets.</p>
+                    <a href="/ticketing/passengers" class="btn btn-primary">Continue as Ticketing Staff</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Transport Administrator</h5>
+                    <p class="card-text">Manage fare types, process exemption requests, and view system reports.</p>
+                    <a href="/admin" class="btn btn-primary">Continue as Administrator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

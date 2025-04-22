@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket Issued{% endblock %}
+
+{% block heading %}Ticket Successfully Issued{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Ticket Issued Successfully</span>
+                    <a href="/ticketing/passengers" class="btn btn-sm btn-light">Return to Passenger List</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success mb-4">
+                    <i class="bi bi-check-circle-fill"></i> Payment confirmed and ticket has been issued.
+                </div>
+                
+                <div class="ticket-container p-4 border rounded mb-4" style="background-color: #f8f9fa;">
+                    <h4 class="text-center mb-4">Public Transport Ticket</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Ticket ID:</strong> {{ ticket.ticket_id }}</p>
+                            <p><strong>Passenger:</strong> {{ ticket.passenger_full_name }}</p>
+                            <p><strong>Fare Type:</strong> {{ ticket.type_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Purchase Date:</strong> {{ ticket.purchase_date }}</p>
+                            <p><strong>Price:</strong> {{ ticket.price }}</p>
+                            <p><strong>Payment Method:</strong> {{ ticket.payment_method }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p><strong>Transaction Reference:</strong> {{ ticket.transaction_ref }}</p>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="window.print()">Print Ticket</button>
+                    <a href="/ticketing/calculate-fare/{{ ticket.passenger_id }}" class="btn btn-outline-secondary">Issue Another Ticket</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

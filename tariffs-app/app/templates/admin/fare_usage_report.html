@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Fare Usage Report{% endblock %}
+
+{% block heading %}Fare Usage Report{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Report Parameters</h5>
+                    <a href="/admin" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Generate Report</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Fare Usage Report: {{ start_date }} to {{ end_date }}</h5>
+            </div>
+            <div class="card-body">
+                {% if report_data %}
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-md-6 text-center">
+                                    <h5>{{ total_tickets }}</h5>
+                                    <p>Total Tickets Sold</p>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <h5>${{ "%.2f"|format(total_revenue) }}</h5>
+                                    <p>Total Revenue</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Fare Type</th>
+                                    <th>Tickets Sold</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in report_data %}
+                                <tr>
+                                    <td>{{ item.date }}</td>
+                                    <td>{{ item.fare_type }}</td>
+                                    <td>{{ item.tickets_sold }}</td>
+                                    <td>${{ "%.2f"|format(item.total_revenue) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 text-end">
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print Report
+                        </button>
+                        <button class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No data available for the selected date range.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

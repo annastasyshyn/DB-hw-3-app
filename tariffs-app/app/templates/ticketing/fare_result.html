@@ -1,0 +1,62 @@
+ {% extends "base.html" %}
+
+{% block title %}Fare Calculation Result{% endblock %}
+
+{% block heading %}Fare Calculation Result{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Calculated Fare</span>
+                    <a href="/ticketing/calculate-fare/{{ calculation.passenger_id }}" class="btn btn-sm btn-secondary">Recalculate</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>Fare Details</h5>
+                    <table class="table">
+                        <tr>
+                            <th>Base Fare:</th>
+                            <td>{{ calculation.base_fare }}</td>
+                        </tr>
+                        <tr>
+                            <th>Discount:</th>
+                            <td>{{ calculation.discount }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <th>Final Fare:</th>
+                            <td><strong>{{ calculation.final_fare }}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <h5>Proceed to Payment</h5>
+                    <form method="post" action="/ticketing/issue-ticket">
+                        <input type="hidden" name="passenger_id" value="{{ calculation.passenger_id }}">
+                        <input type="hidden" name="fare_type_id" value="{{ calculation.fare_type_id }}">
+                        <input type="hidden" name="base_fare" value="{{ calculation.base_fare }}">
+                        <input type="hidden" name="discount" value="{{ calculation.discount }}">
+                        <input type="hidden" name="final_fare" value="{{ calculation.final_fare }}">
+                        
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="" selected disabled>Select payment method</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Card">Credit/Debit Card</option>
+                                <option value="Mobile">Mobile Payment</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success">Confirm Payment & Issue Ticket</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Passenger List - Ticketing{% endblock %}
+
+{% block heading %}Ticketing - Passenger List{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                Select a Passenger
+            </div>
+            <div class="card-body">
+                {% if passengers %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Passenger Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for passenger in passengers %}
+                        <tr>
+                            <td>{{ passenger.passenger_id }}</td>
+                            <td>{{ passenger.passenger_full_name }}</td>
+                            <td>
+                                <a href="/ticketing/passenger/{{ passenger.passenger_id }}" class="btn btn-sm btn-primary">View Profile</a>
+                                <a href="/ticketing/calculate-fare/{{ passenger.passenger_id }}" class="btn btn-sm btn-success">Calculate Fare</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="alert alert-info">
+                    No passengers found. Passengers need to register first.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

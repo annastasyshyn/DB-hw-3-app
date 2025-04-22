@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Passenger Profile - Ticketing{% endblock %}
+
+{% block heading %}Ticketing - Passenger Profile{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Passenger Information</span>
+                    <a href="/ticketing/passengers" class="btn btn-sm btn-secondary">Back to Passenger List</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-3">{{ passenger.passenger_full_name }}</h4>
+                <p><strong>Passenger ID:</strong> {{ passenger.passenger_id }}</p>
+                
+                <div class="mt-3">
+                    <a href="/ticketing/calculate-fare/{{ passenger.passenger_id }}" class="btn btn-primary">Calculate Fare for this Passenger</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if exemptions %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                Active Exemptions
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Exemption ID</th>
+                            <th>Category</th>
+                            <th>Fare Type</th>
+                            <th>Valid From</th>
+                            <th>Valid To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exemption in exemptions %}
+                        <tr>
+                            <td>{{ exemption.exemption_id }}</td>
+                            <td>{{ exemption.exemption_category }}</td>
+                            <td>{{ exemption.type_name }}</td>
+                            <td>{{ exemption.valid_from }}</td>
+                            <td>{{ exemption.valid_to }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            This passenger has no active exemptions. Standard fares will apply.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

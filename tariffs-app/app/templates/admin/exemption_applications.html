@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Exemption Applications{% endblock %}
+
+{% block heading %}Exemption Applications{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Filter Applications</h5>
+                    <a href="/admin" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a href="/admin/exemption-applications" class="btn btn-outline-primary {% if not current_status %}active{% endif %}">All</a>
+                    <a href="/admin/exemption-applications?status=Submitted" class="btn btn-outline-warning {% if current_status == 'Submitted' %}active{% endif %}">Submitted</a>
+                    <a href="/admin/exemption-applications?status=Approved" class="btn btn-outline-success {% if current_status == 'Approved' %}active{% endif %}">Approved</a>
+                    <a href="/admin/exemption-applications?status=Rejected" class="btn btn-outline-danger {% if current_status == 'Rejected' %}active{% endif %}">Rejected</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>
+                    {% if current_status %}
+                        {{ current_status }} Applications
+                    {% else %}
+                        All Exemption Applications
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Passenger</th>
+                                <th>Submitted Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>{{ app.application_id }}</td>
+                                <td>{{ app.passenger_full_name }}</td>
+                                <td>{{ app.submitted_date }}</td>
+                                <td>
+                                    <span class="badge {% if app.status == 'Approved' %}bg-success{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ app.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/exemption-applications/{{ app.application_id }}" class="btn btn-sm btn-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No exemption applications found with the selected filter.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

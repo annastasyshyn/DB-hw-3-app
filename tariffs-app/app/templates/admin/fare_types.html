@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Fare Types{% endblock %}
+
+{% block heading %}Manage Fare Types{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Fare Types</h5>
+                    <a href="/admin/fare-types/create" class="btn btn-success">Create New Fare Type</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if fare_types %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type Name</th>
+                                <th>Description</th>
+                                <th>Base Price</th>
+                                <th>Discount Rate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fare in fare_types %}
+                            <tr>
+                                <td>{{ fare.fare_type_id }}</td>
+                                <td>{{ fare.type_name }}</td>
+                                <td>{{ fare.description }}</td>
+                                <td>{{ fare.base_price }}</td>
+                                <td>{{ fare.discount_rate }}%</td>
+                                <td>
+                                    <a href="/admin/fare-types/{{ fare.fare_type_id }}/edit" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="/admin/fare-types/{{ fare.fare_type_id }}/delete" class="btn btn-sm btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No fare types found. <a href="/admin/fare-types/create">Create your first fare type</a>.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

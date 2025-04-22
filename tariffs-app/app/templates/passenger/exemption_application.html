@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for Exemption{% endblock %}
+
+{% block heading %}Exemption Application{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Apply for Fare Exemption</span>
+                    <a href="/passenger/dashboard?passenger_id={{ passenger.passenger_id }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                {% if success %}
+                <div class="alert alert-success">
+                    {{ success }}
+                </div>
+                {% endif %}
+                
+                <form method="post" enctype="multipart/form-data" class="needs-validation">
+                    <input type="hidden" name="passenger_id" value="{{ passenger.passenger_id }}">
+                    
+                    <div class="mb-3">
+                        <label for="passenger_name" class="form-label">Passenger Name</label>
+                        <input type="text" class="form-control" id="passenger_name" value="{{ passenger.passenger_full_name }}" disabled>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="exemption_category" class="form-label">Exemption Category</label>
+                        <select class="form-select" id="exemption_category" name="exemption_category" required>
+                            <option value="" selected disabled>Select category</option>
+                            <option value="Student">Student Discount</option>
+                            <option value="Senior">Senior Citizen Discount</option>
+                            <option value="Disability">Disability Discount</option>
+                            <option value="LowIncome">Low Income Discount</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select an exemption category.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fare_type_id" class="form-label">Applicable Fare Type</label>
+                        <select class="form-select" id="fare_type_id" name="fare_type_id" required>
+                            <option value="" selected disabled>Select fare type</option>
+                            {% for fare in fare_types %}
+                                <option value="{{ fare.fare_type_id }}">{{ fare.type_name }} ({{ fare.description }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a fare type.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="document_description" class="form-label">Document Description</label>
+                        <input type="text" class="form-control" id="document_description" name="document_description" placeholder="E.g., Student ID, Senior Card, etc." required>
+                        <div class="invalid-feedback">
+                            Please provide a brief description of your document.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="document" class="form-label">Supporting Document</label>
+                        <input type="file" class="form-control" id="document" name="document" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <div class="invalid-feedback">
+                            Please upload a supporting document (PDF, JPG, JPEG or PNG).
+                        </div>
+                        <div class="form-text">
+                            Upload a document to support your exemption application. Accepted formats: PDF, JPG, PNG.
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmCheck" name="confirm" required>
+                        <label class="form-check-label" for="confirmCheck">
+                            I confirm that all information provided is accurate and complete
+                        </label>
+                        <div class="invalid-feedback">
+                            You must confirm before submitting.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enable Bootstrap form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+{% endblock %}

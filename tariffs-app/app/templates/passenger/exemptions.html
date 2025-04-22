@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}My Exemptions{% endblock %}
+
+{% block heading %}My Exemptions{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Exemptions for {{ passenger.passenger_full_name }}</span>
+                    <a href="/passenger/dashboard?passenger_id={{ passenger.passenger_id }}" class="btn btn-sm btn-primary">Return to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if exemptions %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Exemption ID</th>
+                                <th>Category</th>
+                                <th>Fare Type</th>
+                                <th>Status</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exemption in exemptions %}
+                            <tr>
+                                <td>{{ exemption.exemption_id }}</td>
+                                <td>{{ exemption.exemption_category }}</td>
+                                <td>{{ exemption.type_name }}</td>
+                                <td>
+                                    <span class="badge {% if exemption.status == 'Approved' %}bg-success{% elif exemption.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ exemption.status }}
+                                    </span>
+                                </td>
+                                <td>{{ exemption.valid_from }}</td>
+                                <td>{{ exemption.valid_to }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-info">
+                        You have no exemptions yet. <a href="/passenger/exemption/apply?passenger_id={{ passenger.passenger_id }}">Apply for an exemption</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

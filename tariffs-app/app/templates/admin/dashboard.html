@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block heading %}Transport Administrator Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>System Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h3>{{ fare_types_count }}</h3>
+                                <p>Active Fare Types</p>
+                                <a href="/admin/fare-types" class="btn btn-sm btn-primary">Manage Fare Types</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h3>
+                                    {% set pending = 0 %}
+                                    {% for stat in exemption_stats %}
+                                        {% if stat.status == 'Submitted' %}
+                                            {% set pending = stat.count %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {{ pending }}
+                                </h3>
+                                <p>Pending Exemption Requests</p>
+                                <a href="/admin/exemption-applications?status=Submitted" class="btn btn-sm btn-warning">Review Applications</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h3>{{ recent_tickets|length }}</h3>
+                                <p>Recent Tickets Issued</p>
+                                <a href="/admin/reports/fare-usage" class="btn btn-sm btn-info">View Reports</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Exemption Applications by Status</h5>
+                    <a href="/admin/exemption-applications" class="btn btn-sm btn-primary">View All</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if exemption_stats %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Count</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in exemption_stats %}
+                        <tr>
+                            <td>{{ stat.status }}</td>
+                            <td>{{ stat.count }}</td>
+                            <td>
+                                <a href="/admin/exemption-applications?status={{ stat.status }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-center">No exemption applications data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Recent Tickets</h5>
+                    <a href="/admin/reports/fare-usage" class="btn btn-sm btn-primary">View Report</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_tickets %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Passenger</th>
+                            <th>Fare Type</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in recent_tickets %}
+                        <tr>
+                            <td>{{ ticket.ticket_id }}</td>
+                            <td>{{ ticket.passenger_full_name }}</td>
+                            <td>{{ ticket.type_name }}</td>
+                            <td>{{ ticket.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-center">No recent tickets issued.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="/admin/fare-types/create" class="btn btn-success">Create New Fare Type</a>
+                    <a href="/admin/reports/fare-usage" class="btn btn-primary">Generate Fare Usage Report</a>
+                    <a href="/admin/reports/exemption-stats" class="btn btn-info">Exemption Statistics</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

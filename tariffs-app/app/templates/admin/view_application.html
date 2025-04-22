@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}View Exemption Application{% endblock %}
+
+{% block heading %}Review Exemption Application{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Application Details</span>
+                    <a href="/admin/exemption-applications" class="btn btn-sm btn-secondary">Back to Applications</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Application Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Application ID:</th>
+                                <td>{{ application.application_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Submitted Date:</th>
+                                <td>{{ application.submitted_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge {% if application.status == 'Approved' %}bg-success{% elif application.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ application.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Passenger Information</h5>
+                        <table class="table">
+                            <tr>
+                                <th>Passenger ID:</th>
+                                <td>{{ application.passenger_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Full Name:</th>
+                                <td>{{ application.passenger_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td>{{ application.email }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4">Supporting Documents</h5>
+                {% if documents %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Document Type</th>
+                                <th>File Reference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                            <tr>
+                                <td>{{ doc.document_type }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-info" onclick="alert('Document viewer would open here')">View Document</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert alert-warning">
+                        No supporting documents found for this application.
+                    </div>
+                {% endif %}
+                
+                {% if application.status == 'Submitted' %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Process Application</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="/admin/exemption-applications/{{ application.application_id }}/process">
+                            <div class="mb-3">
+                                <label class="form-label">Decision</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="decision" id="approve" value="Approved" required>
+                                    <label class="form-check-label" for="approve">
+                                        Approve
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="decision" id="reject" value="Rejected">
+                                    <label class="form-check-label" for="reject">
+                                        Reject
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="approveFields" class="mb-3" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="exemption_category" class="form-label">Exemption Category</label>
+                                    <select class="form-select" id="exemption_category" name="exemption_category">
+                                        <option value="" selected disabled>Select category</option>
+                                        <option value="Student">Student Discount</option>
+                                        <option value="Senior">Senior Citizen Discount</option>
+                                        <option value="Disability">Disability Discount</option>
+                                        <option value="LowIncome">Low Income Discount</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="fare_type_id" class="form-label">Applicable Fare Type</label>
+                                    <select class="form-select" id="fare_type_id" name="fare_type_id">
+                                        <option value="" selected disabled>Select fare type</option>
+                                        {% for fare in fare_types %}
+                                            <option value="{{ fare.fare_type_id }}">{{ fare.type_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Submit Decision</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <script>
+                    // Simple script to show/hide approval fields
+                    document.getElementById('approve').addEventListener('change', function() {
+                        document.getElementById('approveFields').style.display = 'block';
+                    });
+                    
+                    document.getElementById('reject').addEventListener('change', function() {
+                        document.getElementById('approveFields').style.display = 'none';
+                    });
+                </script>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

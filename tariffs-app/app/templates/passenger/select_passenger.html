@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Select Passenger{% endblock %}
+
+{% block heading %}Select a Passenger{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                Select a Passenger or Register
+            </div>
+            <div class="card-body">
+                {% if passengers %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for passenger in passengers %}
+                            <tr>
+                                <td>{{ passenger.passenger_id }}</td>
+                                <td>{{ passenger.passenger_full_name }}</td>
+                                <td>
+                                    <a href="/passenger/dashboard?passenger_id={{ passenger.passenger_id }}" class="btn btn-sm btn-primary">Select</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No passengers found. Please register first.</p>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="/passenger/register" class="btn btn-success">Register New Passenger</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

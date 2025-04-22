@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Calculate Fare - Ticketing{% endblock %}
+
+{% block heading %}Calculate Fare{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Calculate Fare for {{ passenger.passenger_full_name }}</span>
+                    <a href="/ticketing/passengers" class="btn btn-sm btn-secondary">Back to Passenger List</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/ticketing/calculate-fare">
+                    <input type="hidden" name="passenger_id" value="{{ passenger.passenger_id }}">
+                    
+                    <div class="mb-3">
+                        <label for="fare_type_id" class="form-label">Select Fare Type</label>
+                        <select class="form-select" id="fare_type_id" name="fare_type_id" required>
+                            <option value="" selected disabled>Choose fare type...</option>
+                            {% for fare in fare_types %}
+                            <option value="{{ fare.fare_type_id }}">{{ fare.type_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if exemptions %}
+                    <div class="mb-3">
+                        <label for="exemption_id" class="form-label">Apply Exemption (optional)</label>
+                        <select class="form-select" id="exemption_id" name="exemption_id">
+                            <option value="">No exemption</option>
+                            {% for exemption in exemptions %}
+                            <option value="{{ exemption.exemption_id }}">{{ exemption.exemption_category }} - {{ exemption.type_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No exemptions available for this passenger. Standard fare will be applied.
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary">Calculate Fare</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

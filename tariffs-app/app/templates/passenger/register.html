@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Register as Passenger{% endblock %}
+
+{% block heading %}Passenger Registration{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                Register as a Passenger
+            </div>
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="passenger_full_name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="passenger_full_name" name="passenger_full_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
