@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block title %}Exemption Application Status Report{% endblock %}
+
+{% block heading %}Exemption Application Status Report{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="printableReport">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-text"></i> Official Exemption Status Report</span>
+                        <div class="d-print-none">
+                            <button onclick="window.print();" class="btn btn-sm btn-light me-2">
+                                <i class="bi bi-printer"></i> Print Report
+                            </button>
+                            <a href="/passenger/dashboard?passenger_id={{ passenger.passenger_id }}" class="btn btn-sm btn-light">Return to Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Always visible passenger information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-light">
+                                    <h5><i class="bi bi-person"></i> Passenger Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%">Passenger ID:</th>
+                                            <td>{{ passenger.passenger_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Full Name:</th>
+                                            <td>{{ passenger.passenger_full_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email:</th>
+                                            <td>{{ passenger.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Report Date:</th>
+                                            <td>{{ today|default(now().strftime('%Y-%m-%d')) }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-light">
+                                    <h5><i class="bi bi-info-circle"></i> Application Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if applications %}
+                                        {% set total_applications = applications|length %}
+                                        {% set approved = applications|selectattr('status', 'equalto', 'Approved')|list|length %}
+                                        {% set rejected = applications|selectattr('status', 'equalto', 'Rejected')|list|length %}
+                                        {% set pending = applications|selectattr('status', 'equalto', 'Submitted')|list|length %}
+                                        
+                                        <div class="row text-center">
+                                            <div class="col-md-4 mb-3">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h2 class="mb-0">{{ total_applications }}</h2>
+                                                        <p class="mb-0">Total Applications</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="card {% if approved > 0 %}bg-success text-white{% else %}bg-light{% endif %}">
+                                                    <div class="card-body">
+                                                        <h2 class="mb-0">{{ approved }}</h2>
+                                                        <p class="mb-0">Approved</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="card {% if pending > 0 %}bg-warning{% else %}bg-light{% endif %}">
+                                                    <div class="card-body">
+                                                        <h2 class="mb-0">{{ pending }}</h2>
+                                                        <p class="mb-0">Pending</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-exclamation-circle"></i> No application records found in the system.
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-primary mb-4">
+                        <div class="card-header bg-light">
+                            <h5><i class="bi bi-list-check"></i> Application Status Details</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead class="bg-primary text-white">
+                                            <tr>
+                                                <th>Application ID</th>
+                                                <th>Submitted Date</th>
+                                                <th>Status</th>
+                                                <th>Fare Type</th>
+                                                <th class="d-print-none">Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for app in applications %}
+                                            <tr>
+                                                <td>{{ app.application_id }}</td>
+                                                <td>{{ app.submitted_date }}</td>
+                                                <td>
+                                                    <span class="badge {% if app.status == 'Approved' %}bg-success{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                        {{ app.status }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ app.type_name or "Not Available" }}</td>
+                                                <td class="d-print-none">
+                                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#appModal{{ app.application_id }}">
+                                                        <i class="bi bi-eye"></i> View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <!-- When printing, show expanded details right below each row -->
+                                            <tr class="d-none d-print-table-row">
+                                                <td colspan="4">
+                                                    <div class="app-details-print">
+                                                        <h6>Status Details:</h6>
+                                                        {% if app.status == 'Approved' %}
+                                                            <div class="print-alert print-success">
+                                                                <p><strong>Congratulations!</strong> Your exemption application has been approved.</p>
+                                                                <p>You are now eligible for fare discounts when using public transport. Your exemption is valid for one year from the approval date.</p>
+                                                            </div>
+                                                        {% elif app.status == 'Rejected' %}
+                                                            <div class="print-alert print-danger">
+                                                                <p>Your exemption application has been rejected.</p>
+                                                                <p>This may be due to incomplete or invalid documentation. You can submit a new application with the correct documentation.</p>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="print-alert print-warning">
+                                                                <p>Your application is currently being processed by our administrators.</p>
+                                                                <p>The typical review period is 3-5 business days.</p>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Modal for each application - only for screen view -->
+                                {% for app in applications %}
+                                <div class="modal fade d-print-none" id="appModal{{ app.application_id }}" tabindex="-1" aria-labelledby="appModalLabel{{ app.application_id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header {% if app.status == 'Approved' %}bg-success text-white{% elif app.status == 'Rejected' %}bg-danger text-white{% else %}bg-warning{% endif %}">
+                                                <h5 class="modal-title" id="appModalLabel{{ app.application_id }}">Application #{{ app.application_id }} Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Application Information</h6>
+                                                        <table class="table table-bordered">
+                                                            <tr>
+                                                                <th>Application ID</th>
+                                                                <td>{{ app.application_id }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Submitted Date</th>
+                                                                <td>{{ app.submitted_date }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Status</th>
+                                                                <td>
+                                                                    <span class="badge {% if app.status == 'Approved' %}bg-success{% elif app.status == 'Rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                                        {{ app.status }}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Fare Type</th>
+                                                                <td>{{ app.type_name or "Not Available" }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Description</th>
+                                                                <td>{{ app.description or "Not Available" }}</td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Status Details and Next Steps</h6>
+                                                        {% if app.status == 'Approved' %}
+                                                            <div class="alert alert-success">
+                                                                <p><strong>Congratulations!</strong> Your exemption application has been approved.</p>
+                                                                <p>You are now eligible for fare discounts when using public transport. Your exemption is valid for one year from the approval date.</p>
+                                                                <p>You can view your active exemptions in the <a href="/passenger/exemptions?passenger_id={{ passenger.passenger_id }}">My Exemptions</a> section.</p>
+                                                                
+                                                                <hr>
+                                                                <h6>Next Steps:</h6>
+                                                                <ol>
+                                                                    <li>Your fare discount will apply automatically when purchasing tickets</li>
+                                                                    <li>You may need to show your ID when traveling</li>
+                                                                    <li>Your exemption will expire on {{ (app.submitted_date|datetime).replace(year=(app.submitted_date|datetime).year + 1).strftime('%Y-%m-%d') if app.submitted_date else 'N/A' }}</li>
+                                                                </ol>
+                                                            </div>
+                                                        {% elif app.status == 'Rejected' %}
+                                                            <div class="alert alert-danger">
+                                                                <p>We're sorry, but your exemption application has been rejected.</p>
+                                                                <p>This may be due to incomplete or invalid documentation. You can submit a new application with the correct documentation.</p>
+                                                                <p>If you have questions about the rejection, please contact customer support.</p>
+                                                                
+                                                                <hr>
+                                                                <h6>Next Steps:</h6>
+                                                                <ol>
+                                                                    <li>Review the documentation requirements</li>
+                                                                    <li>Prepare valid supporting documents</li>
+                                                                    <li>Submit a new application</li>
+                                                                </ol>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="alert alert-warning">
+                                                                <p>Your application is currently being processed by our administrators.</p>
+                                                                <p>The typical review period is 3-5 business days. You will be notified once a decision has been made.</p>
+                                                                <p>Thank you for your patience.</p>
+                                                                
+                                                                <hr>
+                                                                <h6>What to expect:</h6>
+                                                                <ol>
+                                                                    <li>Your application is currently in queue for review</li>
+                                                                    <li>You will receive an email notification when a decision is made</li>
+                                                                    <li>You can check back here at any time for status updates</li>
+                                                                </ol>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                {% if app.status == 'Rejected' %}
+                                                    <a href="/passenger/exemption/apply?passenger_id={{ passenger.passenger_id }}" class="btn btn-primary">Apply Again</a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <p><i class="bi bi-info-circle"></i> You haven't submitted any exemption applications yet.</p>
+                                    <p>To apply for a fare exemption, click the button below:</p>
+                                    <p>
+                                        <a href="/passenger/exemption/apply?passenger_id={{ passenger.passenger_id }}" class="btn btn-primary">
+                                            <i class="bi bi-file-earmark-plus"></i> Apply for an Exemption
+                                        </a>
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Information Box -->
+                    <div class="card border-info mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5><i class="bi bi-question-circle"></i> Important Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6><i class="bi bi-check-circle"></i> Approved Applications</h6>
+                                    <p>If your application is approved:</p>
+                                    <ul>
+                                        <li>Your exemption is valid for one year</li>
+                                        <li>You'll receive discounted fares automatically</li>
+                                        <li>You may need to carry valid ID when traveling</li>
+                                        <li>You'll need to renew before expiry</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6><i class="bi bi-x-circle"></i> Rejected Applications</h6>
+                                    <p>If your application is rejected:</p>
+                                    <ul>
+                                        <li>Review documentation requirements</li>
+                                        <li>Ensure all documents are valid and clear</li>
+                                        <li>You can submit a new application at any time</li>
+                                        <li>Contact support if you need assistance</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6><i class="bi bi-clock"></i> Pending Applications</h6>
+                                    <p>If your application is pending:</p>
+                                    <ul>
+                                        <li>Review typically takes 3-5 business days</li>
+                                        <li>You'll receive an email notification</li>
+                                        <li>Your current fares remain unchanged</li>
+                                        <li>Only one active application allowed at a time</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer information displayed only when printing -->
+    <footer class="d-none d-print-block mt-4">
+        <div class="text-center">
+            <p>This report was generated on {{ today|default(now().strftime('%Y-%m-%d')) }}</p>
+            <p>Public Transport Tariffs & Exemptions System</p>
+            <p><small>Report is valid at time of printing. For the most current information, please check online.</small></p>
+        </div>
+    </footer>
+</div>
+
+<!-- Custom CSS for printing -->
+<style>
+@media print {
+    /* General print styles */
+    body {
+        font-size: 12pt;
+        color: #000;
+        background: #fff;
+    }
+    
+    /* Hide elements not needed for printing */
+    .d-print-none {
+        display: none !important;
+    }
+    
+    /* Show elements only when printing */
+    .d-none.d-print-block {
+        display: block !important;
+    }
+    
+    .d-none.d-print-table-row {
+        display: table-row !important;
+    }
+    
+    /* Format tables for printing */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    thead {
+        background-color: #f2f2f2;
+    }
+    
+    /* Card styling for print */
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    /* Badge styling for print */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: normal;
+    }
+    
+    .bg-success {
+        background-color: #d4edda !important;
+        color: #155724 !important;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .bg-warning {
+        background-color: #fff3cd !important;
+        color: #856404 !important;
+        border: 1px solid #ffeeba;
+    }
+    
+    .bg-danger {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* Alert boxes for print */
+    .print-alert {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+    
+    .print-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .print-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
+    
+    .print-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    /* Page breaks */
+    .page-break {
+        page-break-after: always;
+    }
+    
+    /* Footer */
+    footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        border-top: 1px solid #ddd;
+        padding-top: 10px;
+        font-size: 10pt;
+    }
+    
+    /* Add space for footer */
+    @page {
+        margin-bottom: 1.5cm;
+    }
+}
+</style>
+{% endblock %}

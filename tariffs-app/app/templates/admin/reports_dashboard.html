@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Reports Dashboard{% endblock %}
+
+{% block heading %}Reports Dashboard & Printout Generation{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>System Overview</h5>
+                    <a href="/admin" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ passengers_count }}</h3>
+                                <p>Total Passengers</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ fare_types_count }}</h3>
+                                <p>Fare Types</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ exemptions_count }}</h3>
+                                <p>Active Exemptions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h3>{{ tickets_count }}</h3>
+                                <p>Tickets Issued</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <p><strong>Data Range:</strong> {{ first_date or 'No data' }} to {{ last_date or 'No data' }}</p>
+                    <p>All reports can be printed individually or compiled into a comprehensive report using the options below.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>Available Reports</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5>Fare Usage Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>This report shows ticket sales and revenue by fare type over a specified period.</p>
+                                <form method="get" action="/admin/reports/fare-usage" target="_blank" class="row g-3">
+                                    <div class="col-md-5">
+                                        <label for="start_date" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="start_date" name="start_date">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label for="end_date" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="end_date" name="end_date">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary">Generate</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5>Exemption Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>This report analyzes exemption applications by category and approval rate.</p>
+                                <form method="get" action="/admin/reports/exemption-stats" target="_blank" class="row g-3">
+                                    <div class="col-md-8">
+                                        <label for="period" class="form-label">Time Period</label>
+                                        <select class="form-select" id="period" name="period">
+                                            <option value="week">Last Week</option>
+                                            <option value="month" selected>Last Month</option>
+                                            <option value="year">Last Year</option>
+                                            <option value="all">All Time</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary">Generate</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5>Passenger Exemption Status</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>View exemption application status for a specific passenger.</p>
+                                <form method="get" action="/admin/reports/passenger-exemptions" target="_blank" class="row g-3">
+                                    <div class="col-md-8">
+                                        <label for="passenger_id" class="form-label">Passenger ID</label>
+                                        <input type="number" class="form-control" id="passenger_id" name="passenger_id" required>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary">Generate</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5>Revenue Forecast</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>This report projects future revenue based on historical ticket sales.</p>
+                                <form method="get" action="/admin/reports/revenue-forecast" target="_blank" class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="months" class="form-label">Forecast Period</label>
+                                        <select class="form-select" id="months" name="months">
+                                            <option value="3">3 months</option>
+                                            <option value="6" selected>6 months</option>
+                                            <option value="12">12 months</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="growth_rate" class="form-label">Growth Rate (%)</label>
+                                        <input type="number" step="0.1" min="-10" max="30" class="form-control" id="growth_rate" name="growth_rate" value="2.5">
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary">Generate</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Generate Comprehensive Report</h5>
+            </div>
+            <div class="card-body">
+                <p>Generate a printable comprehensive report that includes all key metrics and data from the system.</p>
+                <form id="comprehensiveReportForm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="includeFareUsage" checked>
+                                <label class="form-check-label" for="includeFareUsage">Include Fare Usage Report</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="includeExemptionStats" checked>
+                                <label class="form-check-label" for="includeExemptionStats">Include Exemption Statistics</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="includeRevenueForecast" checked>
+                                <label class="form-check-label" for="includeRevenueForecast">Include Revenue Forecast</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="includeActiveFareTypes">
+                                <label class="form-check-label" for="includeActiveFareTypes">Include Active Fare Types</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="reportPeriod" class="form-label">Report Period</label>
+                            <select class="form-select" id="reportPeriod">
+                                <option value="month" selected>Last Month</option>
+                                <option value="quarter">Last Quarter</option>
+                                <option value="year">Last Year</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="button" id="generateComprehensiveReport" class="btn btn-success btn-lg">
+                            Generate Comprehensive Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('generateComprehensiveReport').addEventListener('click', function() {
+        // Get selected report options
+        const includeFareUsage = document.getElementById('includeFareUsage').checked;
+        const includeExemptionStats = document.getElementById('includeExemptionStats').checked;
+        const includeRevenueForecast = document.getElementById('includeRevenueForecast').checked;
+        const includeActiveFareTypes = document.getElementById('includeActiveFareTypes').checked;
+        const reportPeriod = document.getElementById('reportPeriod').value;
+        
+        // Build URLs for each report
+        const urls = [];
+        
+        if (includeFareUsage) {
+            // Calculate date range based on report period
+            const endDate = new Date().toISOString().split('T')[0];
+            let startDate;
+            
+            if (reportPeriod === 'month') {
+                const date = new Date();
+                date.setMonth(date.getMonth() - 1);
+                startDate = date.toISOString().split('T')[0];
+            } else if (reportPeriod === 'quarter') {
+                const date = new Date();
+                date.setMonth(date.getMonth() - 3);
+                startDate = date.toISOString().split('T')[0];
+            } else if (reportPeriod === 'year') {
+                const date = new Date();
+                date.setFullYear(date.getFullYear() - 1);
+                startDate = date.toISOString().split('T')[0];
+            } else {
+                startDate = ''; // All time
+            }
+            
+            urls.push(`/admin/reports/fare-usage?start_date=${startDate}&end_date=${endDate}`);
+        }
+        
+        if (includeExemptionStats) {
+            urls.push(`/admin/reports/exemption-stats?period=${reportPeriod === 'quarter' ? 'month' : reportPeriod}`);
+        }
+        
+        if (includeRevenueForecast) {
+            const months = reportPeriod === 'year' ? 12 : (reportPeriod === 'quarter' ? 6 : 3);
+            urls.push(`/admin/reports/revenue-forecast?months=${months}&growth_rate=2.5`);
+        }
+        
+        if (includeActiveFareTypes) {
+            urls.push(`/admin/fare-types`);
+        }
+        
+        // Open all reports in new tabs
+        urls.forEach(url => window.open(url, '_blank'));
+        
+        // Show print dialog for each window after they load
+        alert('Reports are being generated in separate tabs. You can print each report individually.');
+    });
+    
+    // Set default dates for fare usage report
+    window.addEventListener('load', function() {
+        // Set end date to today
+        const today = new Date();
+        document.getElementById('end_date').value = today.toISOString().split('T')[0];
+        
+        // Set start date to 30 days ago
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - 30);
+        document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+    });
+</script>
+{% endblock %}

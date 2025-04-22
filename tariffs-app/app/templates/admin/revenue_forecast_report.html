@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Revenue Forecast Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Revenue Forecast Report</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Forecast Parameters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="/admin/reports/revenue-forecast" class="row g-3">
+                <div class="col-md-3">
+                    <label for="months" class="form-label">Forecast Period (months)</label>
+                    <select class="form-control" id="months" name="months">
+                        <option value="3" {% if months == 3 %}selected{% endif %}>3 months</option>
+                        <option value="6" {% if months == 6 %}selected{% endif %}>6 months</option>
+                        <option value="12" {% if months == 12 %}selected{% endif %}>12 months</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="growth_rate" class="form-label">Growth Rate (%)</label>
+                    <input type="number" step="0.1" min="-10" max="30" class="form-control" id="growth_rate" name="growth_rate" value="{{ growth_rate }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="seasonal_factor" class="form-label">Seasonal Factor</label>
+                    <select class="form-control" id="seasonal_factor" name="seasonal_factor">
+                        <option value="none" {% if seasonal_factor == 'none' %}selected{% endif %}>None</option>
+                        <option value="light" {% if seasonal_factor == 'light' %}selected{% endif %}>Light</option>
+                        <option value="moderate" {% if seasonal_factor == 'moderate' %}selected{% endif %}>Moderate</option>
+                        <option value="strong" {% if seasonal_factor == 'strong' %}selected{% endif %}>Strong</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mb-3">Generate Forecast</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Revenue Forecast Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Projected Tickets</th>
+                                    <th>Projected Revenue</th>
+                                    <th>Growth vs Current</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for forecast in forecast_data %}
+                                <tr>
+                                    <td>{{ forecast.month }}</td>
+                                    <td>{{ forecast.tickets }}</td>
+                                    <td>${{ "%.2f"|format(forecast.revenue) }}</td>
+                                    <td>
+                                        {% if forecast.growth >= 0 %}
+                                        <span class="text-success">+{{ "%.1f"|format(forecast.growth) }}%</span>
+                                        {% else %}
+                                        <span class="text-danger">{{ "%.1f"|format(forecast.growth) }}%</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td>Total</td>
+                                    <td>{{ total_tickets }}</td>
+                                    <td>${{ "%.2f"|format(total_revenue) }}</td>
+                                    <td>
+                                        {% if average_growth >= 0 %}
+                                        <span class="text-success">+{{ "%.1f"|format(average_growth) }}%</span>
+                                        {% else %}
+                                        <span class="text-danger">{{ "%.1f"|format(average_growth) }}%</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Revenue by Fare Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Fare Type</th>
+                                    <th>Current Monthly Revenue</th>
+                                    <th>Projected Monthly Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fare in fare_projections %}
+                                <tr>
+                                    <td>{{ fare.type_name }}</td>
+                                    <td>${{ "%.2f"|format(fare.current_revenue) }}</td>
+                                    <td>${{ "%.2f"|format(fare.projected_revenue) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Forecast Assumptions</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">Base Period: {{ base_period }}</li>
+                        <li class="list-group-item">Monthly Growth Rate: {{ growth_rate }}%</li>
+                        <li class="list-group-item">Seasonal Adjustment: {{ seasonal_factor }}</li>
+                        <li class="list-group-item">Forecast Period: {{ months }} months</li>
+                        <li class="list-group-item">Based on historical data from: {{ historical_start }} to {{ historical_end }}</li>
+                    </ul>
+                    <div class="alert alert-info mt-3">
+                        <strong>Note:</strong> This forecast is based on historical ticket sales and current pricing. 
+                        Actual results may vary due to market conditions, pricing changes, and other factors.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

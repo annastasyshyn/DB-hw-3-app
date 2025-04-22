@@ -177,49 +177,106 @@ async def issue_ticket(
     today = date.today()
     ticket_params = (today, final_fare, passenger_id, fare_type_id)
     
-    ticket_result = execute_query(ticket_query, ticket_params, fetch=False)
-    
-    if not ticket_result or ticket_result.get("affected_rows", 0) == 0:
-        raise HTTPException(status_code=500, detail="Failed to create ticket")
-    
-    # Get the new ticket ID
-    ticket_id = execute_query(
-        "SELECT LAST_INSERT_ID() as ticket_id", 
-        fetch=True
-    )[0]["ticket_id"]
-    
-    # Record fare calculation
-    calc_query = """
-        INSERT INTO fare_calculation (ticket_id, base_fare, discount, final_fare)
-        VALUES (%s, %s, %s, %s)
-    """
-    calc_params = (ticket_id, base_fare, discount, final_fare)
-    execute_query(calc_query, calc_params, fetch=False)
-    
-    # Record payment confirmation
-    payment_query = """
-        INSERT INTO payment_confirmation (ticket_id, status, payment_method, transaction_ref)
-        VALUES (%s, %s, %s, %s)
-    """
-    # Generate a unique transaction reference
-    transaction_ref = f"TXN{date.today().strftime('%Y%m%d')}-{ticket_id}"
-    payment_params = (ticket_id, "Confirmed", payment_method, transaction_ref)
-    execute_query(payment_query, payment_params, fetch=False)
-    
-    # Get detailed ticket information for display
-    ticket = execute_query("""
-        SELECT t.*, p.passenger_full_name, ft.type_name, pc.payment_method, pc.transaction_ref
-        FROM ticket t
-        JOIN passenger p ON t.passenger_id = p.passenger_id
-        JOIN fare_type ft ON t.fare_type_id = ft.fare_type_id
-        JOIN payment_confirmation pc ON t.ticket_id = pc.ticket_id
-        WHERE t.ticket_id = %s
-    """, (ticket_id,))
-    
-    if ticket:
-        return templates.TemplateResponse(
-            "ticketing/ticket_issued.html",
-            {"request": request, "ticket": ticket[0]}
-        )
-    else:
-        raise HTTPException(status_code=500, detail="Error retrieving ticket information")
+    try:
+        # First, verify the passenger exists
+        passenger = execute_query("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,), fetch=True)
+        if not passenger:
+            print(f"[ERROR] Passenger not found for ID: {passenger_id}")
+            raise HTTPException(status_code=404, detail="Passenger not found")
+            
+        # Verify the fare type exists
+        fare_type = execute_query("SELECT * FROM fare_type WHERE fare_type_id = %s", (fare_type_id,), fetch=True)
+        if not fare_type:
+            print(f"[ERROR] Fare type not found for ID: {fare_type_id}")
+            raise HTTPException(status_code=404, detail="Fare type not found")
+            
+        # Insert the ticket record
+        ticket_result = execute_query(ticket_query, ticket_params, fetch=False)
+        
+        if not ticket_result or ticket_result.get("affected_rows", 0) == 0:
+            print(f"[ERROR] Failed to create ticket: {ticket_result}")
+            raise HTTPException(status_code=500, detail="Failed to create ticket")
+        
+        # Get the new ticket ID using the lastrowid from the result
+        ticket_id = ticket_result.get("last_insert_id")
+        
+        if not ticket_id:
+            # Fall back to using LAST_INSERT_ID() if lastrowid isn't available
+            ticket_id_result = execute_query("SELECT LAST_INSERT_ID() as ticket_id", fetch=True)
+            if ticket_id_result and len(ticket_id_result) > 0:
+                ticket_id = ticket_id_result[0]["ticket_id"]
+            else:
+                print("[ERROR] Could not retrieve ticket ID")
+                raise HTTPException(status_code=500, detail="Could not retrieve ticket ID")
+        
+        print(f"[DEBUG] Created new ticket with ID: {ticket_id}")
+        
+        # Record fare calculation
+        calc_query = """
+            INSERT INTO fare_calculation (ticket_id, base_fare, discount, final_fare)
+            VALUES (%s, %s, %s, %s)
+        """
+        calc_params = (ticket_id, base_fare, discount, final_fare)
+        calc_result = execute_query(calc_query, calc_params, fetch=False)
+        print(f"[DEBUG] Added fare calculation: {calc_result}")
+        
+        # Record payment confirmation
+        payment_query = """
+            INSERT INTO payment_confirmation (ticket_id, status, payment_method, transaction_ref)
+            VALUES (%s, %s, %s, %s)
+        """
+        # Generate a unique transaction reference
+        transaction_ref = f"TXN{date.today().strftime('%Y%m%d')}-{ticket_id}"
+        payment_params = (ticket_id, "Confirmed", payment_method, transaction_ref)
+        payment_result = execute_query(payment_query, payment_params, fetch=False)
+        print(f"[DEBUG] Added payment confirmation: {payment_result}")
+        
+        # Double-verify the ticket record exists in the database
+        ticket_check = execute_query("SELECT * FROM ticket WHERE ticket_id = %s", (ticket_id,), fetch=True)
+        if not ticket_check or len(ticket_check) == 0:
+            print(f"[ERROR] Ticket record not found for ID: {ticket_id}")
+            # Attempt to show all recent tickets for debugging
+            recent_tickets = execute_query("SELECT * FROM ticket ORDER BY ticket_id DESC LIMIT 5", fetch=True)
+            print(f"[DEBUG] Recent tickets: {recent_tickets}")
+            raise HTTPException(status_code=500, detail="Ticket record not found after creation")
+            
+        # Get detailed ticket information for display - Use LEFT JOIN to ensure we get the ticket even if related data is missing
+        ticket = execute_query("""
+            SELECT t.*, p.passenger_full_name, ft.type_name, pc.payment_method, pc.transaction_ref
+            FROM ticket t
+            LEFT JOIN passenger p ON t.passenger_id = p.passenger_id
+            LEFT JOIN fare_type ft ON t.fare_type_id = ft.fare_type_id
+            LEFT JOIN payment_confirmation pc ON t.ticket_id = pc.ticket_id
+            WHERE t.ticket_id = %s
+        """, (ticket_id,), fetch=True)
+        
+        print(f"[DEBUG] Retrieved ticket info: {ticket}")
+        
+        if ticket and len(ticket) > 0:
+            return templates.TemplateResponse(
+                "ticketing/ticket_issued.html",
+                {"request": request, "ticket": ticket[0]}
+            )
+        else:
+            print(f"[ERROR] No ticket found with ID: {ticket_id} after successful verification")
+            raise HTTPException(status_code=500, detail="Ticket was created but could not be retrieved")
+            
+    except Exception as e:
+        print(f"[ERROR] Exception in ticket issuance process: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Try to provide more specific error information
+        error_detail = str(e)
+        if "payment_confirmation" in error_detail.lower():
+            error_detail = "Error with payment confirmation"
+        elif "fare_calculation" in error_detail.lower():
+            error_detail = "Error with fare calculation"
+        elif "foreign key constraint" in error_detail.lower():
+            if "passenger_id" in error_detail.lower():
+                error_detail = "Invalid passenger ID"
+            elif "fare_type_id" in error_detail.lower():
+                error_detail = "Invalid fare type ID"
+            else:
+                error_detail = "Foreign key constraint violation"
+        
+        raise HTTPException(status_code=500, detail=f"Error retrieving ticket information: {error_detail}")

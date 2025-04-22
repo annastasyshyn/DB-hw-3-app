@@ -294,3 +294,86 @@ async def view_exemptions(request: Request, passenger_id: int):
         "passenger/exemptions.html",
         {"request": request, "passenger": passenger[0], "exemptions": exemptions}
     )
+
+# 2.5: View Exemption Application Status Report
+@router.get("/exemption/status-report", response_class=HTMLResponse)
+async def exemption_status_report(request: Request, passenger_id: int):
+    """Generate a status report for passenger exemption applications"""
+    try:
+        passenger = execute_query("SELECT * FROM passenger WHERE passenger_id = %s", (passenger_id,))
+        if not passenger:
+            raise HTTPException(status_code=404, detail="Passenger not found")
+        
+        # Get all applications for the passenger with document information
+        applications = execute_query("""
+            SELECT ea.*, dr.document_type
+            FROM exemption_application ea
+            LEFT JOIN document_record dr ON ea.application_id = dr.application_id
+            WHERE ea.passenger_id = %s
+            ORDER BY ea.submitted_date DESC
+        """, (passenger_id,))
+        
+        # Get approved applications with fare type information
+        # Updated query to correctly link applications to their exemptions
+        approved_applications = execute_query("""
+            SELECT ea.application_id, ft.type_name, ft.description, e.exemption_id
+            FROM exemption_application ea
+            LEFT JOIN exemption e ON (
+                ea.passenger_id = e.passenger_id AND 
+                ea.status = 'Approved' AND
+                DATE(ea.submitted_date) <= e.valid_from
+            )
+            LEFT JOIN fare_type ft ON e.fare_type_id = ft.fare_type_id
+            WHERE ea.passenger_id = %s AND ea.status = 'Approved'
+        """, (passenger_id,))
+        
+        # Create a lookup dictionary for fare type information
+        fare_type_lookup = {}
+        for app in approved_applications:
+            if app['exemption_id'] is not None:  # Only add if there's an actual exemption
+                fare_type_lookup[app['application_id']] = {
+                    'type_name': app['type_name'],
+                    'description': app['description']
+                }
+        
+        # Enrich applications with fare type information
+        for app in applications:
+            if app['application_id'] in fare_type_lookup:
+                app['type_name'] = fare_type_lookup[app['application_id']]['type_name']
+                app['description'] = fare_type_lookup[app['application_id']]['description']
+            else:
+                app['type_name'] = None
+                app['description'] = None
+        
+        # Get current active exemptions for the passenger
+        today = date.today()
+        exemptions = execute_query("""
+            SELECT e.*, ft.type_name, 
+                DATEDIFF(e.valid_to, CURDATE()) as days_remaining
+            FROM exemption e
+            JOIN fare_type ft ON e.fare_type_id = ft.fare_type_id
+            WHERE e.passenger_id = %s
+            ORDER BY e.valid_to DESC
+        """, (passenger_id,))
+        
+        return templates.TemplateResponse(
+            "passenger/application_status.html",
+            {
+                "request": request, 
+                "passenger": passenger[0], 
+                "applications": applications,
+                "exemptions": exemptions,
+                "today": today
+            }
+        )
+    except Exception as e:
+        print(f"[ERROR] Error generating exemption status report: {str(e)}")
+        return templates.TemplateResponse(
+            "passenger/error.html",
+            {
+                "request": request,
+                "error": "An error occurred while generating your exemption status report.",
+                "details": str(e),
+                "passenger_id": passenger_id
+            }
+        )

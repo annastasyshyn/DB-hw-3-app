@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Passenger Activity Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Passenger Activity Report</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filter Options</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" action="/admin/reports/passenger-activity" class="row g-3">
+                <div class="col-md-3">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="passenger_type" class="form-label">Passenger Type</label>
+                    <select class="form-control" id="passenger_type" name="passenger_type">
+                        <option value="all" {% if passenger_type == 'all' %}selected{% endif %}>All</option>
+                        <option value="adult" {% if passenger_type == 'adult' %}selected{% endif %}>Adult</option>
+                        <option value="child" {% if passenger_type == 'child' %}selected{% endif %}>Child</option>
+                        <option value="student" {% if passenger_type == 'student' %}selected{% endif %}>Student</option>
+                        <option value="senior" {% if passenger_type == 'senior' %}selected{% endif %}>Senior</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary mb-3">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Passenger Activity Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>New Registrations</th>
+                                    <th>Tickets Purchased</th>
+                                    <th>Unique Active Passengers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in activity_data %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.new_registrations }}</td>
+                                    <td>{{ entry.tickets_purchased }}</td>
+                                    <td>{{ entry.unique_passengers }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td>Total</td>
+                                    <td>{{ total_registrations }}</td>
+                                    <td>{{ total_tickets }}</td>
+                                    <td>{{ total_unique_passengers }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Summary Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Average Daily Registrations
+                            <span class="badge bg-primary rounded-pill">{{ avg_daily_registrations }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Average Daily Tickets
+                            <span class="badge bg-primary rounded-pill">{{ avg_daily_tickets }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Most Active Day
+                            <span class="badge bg-success rounded-pill">{{ most_active_day }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Least Active Day
+                            <span class="badge bg-warning rounded-pill">{{ least_active_day }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Passenger Type Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for type in passenger_types %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ type.name }}
+                            <span class="badge bg-primary rounded-pill">{{ type.count }} ({{ type.percentage }}%)</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Passenger Activity Trends</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Passenger Type</th>
+                                    <th>First-time Riders</th>
+                                    <th>Returning Riders</th>
+                                    <th>Avg. Tickets per Passenger</th>
+                                    <th>Avg. Fare per Ticket</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trend in trend_data %}
+                                <tr>
+                                    <td>{{ trend.passenger_type }}</td>
+                                    <td>{{ trend.first_time }}</td>
+                                    <td>{{ trend.returning }}</td>
+                                    <td>{{ "%.2f"|format(trend.avg_tickets) }}</td>
+                                    <td>${{ "%.2f"|format(trend.avg_fare) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

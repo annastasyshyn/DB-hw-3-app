@@ -137,7 +137,21 @@ def execute_query(query, params=None, fetch=True):
                 log_query(query, params, time.time() - start_time, result)
             else:
                 connection.commit()
-                result = {"affected_rows": cursor.rowcount, "last_insert_id": cursor.lastrowid}
+                # Explicitly get the last insert ID if this was an insert
+                last_id = None
+                if query.lower().strip().startswith("insert"):
+                    last_id = cursor.lastrowid
+                    # If lastrowid is not available, try to get it with a separate query
+                    if last_id is None or last_id == 0:
+                        try:
+                            cursor.execute("SELECT LAST_INSERT_ID()")
+                            last_id_result = cursor.fetchone()
+                            if last_id_result and "LAST_INSERT_ID()" in last_id_result:
+                                last_id = last_id_result["LAST_INSERT_ID()"]
+                        except Error as e:
+                            print(f"Error getting last insert ID: {e}")
+                
+                result = {"affected_rows": cursor.rowcount, "last_insert_id": last_id}
                 log_query(query, params, time.time() - start_time, cursor.rowcount)
                 
     except Error as e:

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Error{% endblock %}
+
+{% block heading %}Something went wrong{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5>Error</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <p><i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error_message }}</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p>Please try one of the following options:</p>
+                        <ul>
+                            <li>Go back and try again</li>
+                            <li>Return to your dashboard</li>
+                            <li>Contact support if the issue persists</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 d-flex gap-3">
+                        <button onclick="history.back()" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Go Back
+                        </button>
+                        {% if passenger_id %}
+                        <a href="/passenger/dashboard?passenger_id={{ passenger_id }}" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Dashboard
+                        </a>
+                        {% else %}
+                        <a href="/" class="btn btn-primary">
+                            <i class="bi bi-house"></i> Home
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
